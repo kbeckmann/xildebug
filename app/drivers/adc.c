@@ -7,6 +7,7 @@ ADC_HandleTypeDef adc_handle;
 static bool m_initialized;
 static uint16_t m_adc_values[NUM_OF_ADC_CHANNELS];
 static uint32_t m_adc_samples_count;
+static uint32_t m_adc_current_index;
 static uint32_t m_errors_count;
 static adc_conversion_ready m_callback;
 
@@ -28,7 +29,7 @@ err_t adc_init(void)
 	adc_handle.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
 	adc_handle.Init.LowPowerAutoWait = DISABLE;
 	adc_handle.Init.ContinuousConvMode = ENABLE;
-	adc_handle.Init.NbrOfConversion = 2;
+	adc_handle.Init.NbrOfConversion = NUM_OF_ADC_CHANNELS;
 	adc_handle.Init.DiscontinuousConvMode = DISABLE;
 	adc_handle.Init.NbrOfDiscConversion = 1;
 	adc_handle.Init.ExternalTrigConv = ADC_SOFTWARE_START;
@@ -58,6 +59,11 @@ err_t adc_init(void)
 
 	adc_config.Channel = ADC_CHANNEL_6;
 	adc_config.Rank = ADC_REGULAR_RANK_2;
+	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
+	HAL_ERR_CHECK(status, EADC_HAL_CONFIG_CHANNEL);
+
+	adc_config.Channel = ADC_CHANNEL_VREFINT;
+	adc_config.Rank = ADC_REGULAR_RANK_3;
 	status = HAL_ADC_ConfigChannel(&adc_handle, &adc_config);
 	HAL_ERR_CHECK(status, EADC_HAL_CONFIG_CHANNEL);
 
@@ -101,12 +107,11 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 	/* If End Of Sequence is set, the last sample in our sequence is done.
 	 * TODO: Dig deeper in the HAL and see if register access is really necessary.
 	 */
-	if (hadc->Instance->ISR & ADC_ISR_EOS) {
-		m_adc_values[1] = HAL_ADC_GetValue(&adc_handle);
+	m_adc_values[m_adc_current_index++] = HAL_ADC_GetValue(&adc_handle);
+	if (hadc->Instance->ISR & ADC_ISR_EOS || m_adc_current_index > NUM_OF_ADC_CHANNELS) {
+		m_adc_current_index = 0;
 		if (m_callback)
 			m_callback(m_adc_values);
-	} else {
-		m_adc_values[0] = HAL_ADC_GetValue(&adc_handle);
 	}
 }
 
