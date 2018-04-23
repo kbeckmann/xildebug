@@ -6,7 +6,6 @@
 ADC_HandleTypeDef adc_handle;
 static bool m_initialized;
 static uint16_t m_adc_values[NUM_OF_ADC_CHANNELS];
-static uint32_t m_adc_samples_count;
 static uint32_t m_adc_current_index;
 static uint32_t m_errors_count;
 static adc_conversion_ready m_callback;
@@ -102,16 +101,20 @@ void adc_set_callback(adc_conversion_ready callback)
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
-	m_adc_samples_count++;
+	const bool is_end_of_sequence = hadc->Instance->ISR & ADC_ISR_EOS;
 
-	/* If End Of Sequence is set, the last sample in our sequence is done.
-	 * TODO: Dig deeper in the HAL and see if register access is really necessary.
-	 */
 	m_adc_values[m_adc_current_index++] = HAL_ADC_GetValue(&adc_handle);
-	if (hadc->Instance->ISR & ADC_ISR_EOS || m_adc_current_index > NUM_OF_ADC_CHANNELS) {
+
+	/* If End Of Sequence is set, the last sample in our sequence is done. */
+	if (is_end_of_sequence && m_adc_current_index >= NUM_OF_ADC_CHANNELS) {
 		m_adc_current_index = 0;
 		if (m_callback)
 			m_callback(m_adc_values);
+	} else if (m_adc_current_index >= NUM_OF_ADC_CHANNELS) {
+		/* We must've missed at least one interrupt.
+		 * Throw away old samples as they might be out of order and start over.
+		 */
+		m_adc_current_index = 0;
 	}
 }
 
