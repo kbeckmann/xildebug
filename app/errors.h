@@ -26,3 +26,5 @@ typedef uint32_t err_t;
 #define MCP4018T_BASE	(ERR_BASE + (0x06 << 16))
 #define UART_BASE		(ERR_BASE + (0x07 << 16))
 #define POWER_BASE		(ERR_BASE + (0x08 << 16))
+#define EUSB_BASE		(ERR_BASE + (0x09 << 16))
+#define EUSB_CDC_BASE	(ERR_BASE + (0x0A << 16))

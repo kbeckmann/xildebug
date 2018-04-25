@@ -1,7 +1,6 @@
-#include "stm32l4xx_hal.h"
-
-#include "FreeRTOS.h"
-#include "task.h"
+#include <FreeRTOS.h>
+#include <string.h>
+#include <task.h>
 
 #include "drivers/adc.h"
 #include "drivers/gpio.h"
@@ -10,7 +9,10 @@
 #include "drivers/max14662.h"
 #include "drivers/mcp4018t.h"
 #include "drivers/uart.h"
+#include "drivers/usb.h"
+#include "drivers/usb_cdc.h"
 #include "power.h"
+#include "stm32l4xx_hal.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -78,12 +80,22 @@ HAL_StatusTypeDef SystemClock_Config(void)
 	return status;
 }
 
+int _write(int fd, const char *msg, int len)
+{
+	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)msg, len, HAL_MAX_DELAY);
+	return len;
+}
+
+int _read(int fd, char *msg, int len)
+{
+	return 0;
+}
+
 void main_task(void *p_arg)
 {
-	char uart_tx_buf[64];
-	char uart_rx_buf[8];
+	HAL_StatusTypeDef status;
+	uint8_t uart_rx_buf;
 	int i = 0;
-	int len;
 
 	/* TODO: Handle this properly later... */
 	max14662_set_value(MAX14662_AD_0_0, 0xff);
@@ -93,10 +105,11 @@ void main_task(void *p_arg)
 		led_rgb_set(i % 8);
 		led_tx_set(i % 2);
 
-		len = sprintf(uart_tx_buf, "Hello world %d! (rx=0x%02X)\r\n", i, uart_rx_buf[0]);
-		
-		HAL_UART_Transmit(uart_get_handle(), uart_tx_buf, len, 100);
-		HAL_UART_Receive(uart_get_handle(), uart_rx_buf, sizeof(uart_rx_buf), 100);
+		printf("Hello world %d! (rx=0x%02X)\r\n", i, uart_rx_buf);
+
+		status = HAL_UART_Receive(uart_get_handle(), &uart_rx_buf, sizeof(uint8_t), 100);
+		if (status == HAL_OK)
+			status = usb_cdc_tx(&uart_rx_buf, sizeof(uint8_t));
 	}
 }
 
@@ -131,6 +144,9 @@ int main(void)
 	ERR_CHECK(r);
 
 	r = power_init();
+	ERR_CHECK(r);
+
+	r = usb_init();
 	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
