@@ -14,7 +14,7 @@ err_t uart_init(void)
 
 	uart_handle.Instance = USART3;
 	uart_handle.Init.BaudRate = 115200;
-	uart_handle.Init.WordLength = UART_WORDLENGTH_7B;
+	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
 	uart_handle.Init.StopBits = UART_STOPBITS_1;
 	uart_handle.Init.Parity = UART_PARITY_NONE;
 	uart_handle.Init.Mode = UART_MODE_TX_RX;
@@ -34,6 +34,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 	GPIO_InitTypeDef gpio_config;
 
 	if (p_handle->Instance == USART3) {
+		__HAL_RCC_USART3_CLK_ENABLE();
 		gpio_config.Pin = DUT_UART_TX_Pin|DUT_UART_RX_Pin;
 		gpio_config.Mode = GPIO_MODE_AF_PP;
 		gpio_config.Pull = GPIO_NOPULL;
