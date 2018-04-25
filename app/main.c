@@ -80,15 +80,23 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 void main_task(void *p_arg)
 {
+	char uart_tx_buf[64];
+	char uart_rx_buf[8];
 	int i = 0;
+	int len;
 
-	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)"Hello World", 11, HAL_MAX_DELAY);
+	/* TODO: Handle this properly later... */
+	max14662_set_value(MAX14662_AD_0_0, 0xff);
 
 	while (1) {
 		i++;
 		led_rgb_set(i % 8);
 		led_tx_set(i % 2);
-		vTaskDelay(pdMS_TO_TICKS(250));
+
+		len = sprintf(uart_tx_buf, "Hello world %d! (rx=0x%02X)\r\n", i, uart_rx_buf[0]);
+		
+		HAL_UART_Transmit(uart_get_handle(), uart_tx_buf, len, 100);
+		HAL_UART_Receive(uart_get_handle(), uart_rx_buf, sizeof(uart_rx_buf), 100);
 	}
 }
 
