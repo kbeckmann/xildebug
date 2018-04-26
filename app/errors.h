@@ -28,3 +28,4 @@ typedef uint32_t err_t;
 #define POWER_BASE		(ERR_BASE + (0x08 << 16))
 #define EUSB_BASE		(ERR_BASE + (0x09 << 16))
 #define EUSB_CDC_BASE	(ERR_BASE + (0x0A << 16))
+#define EUSB_HID_BASE	(ERR_BASE + (0x0B << 16))

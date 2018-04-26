@@ -62,11 +62,17 @@ USBD_StatusTypeDef USBD_LL_Init(USBD_HandleTypeDef *p_dev)
 	if (HAL_PCD_Init(self.pcd_handle) != HAL_OK)
 		return USBD_FAIL;
 
-	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x00 , PCD_SNG_BUF, 0x18);
-	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x80 , PCD_SNG_BUF, 0x58);
-	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x81 , PCD_SNG_BUF, 0xC0);
-	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x01 , PCD_SNG_BUF, 0x110);
-	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x82 , PCD_SNG_BUF, 0x100);
+// CDC
+//	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x00 , PCD_SNG_BUF, 0x18);
+//	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x80 , PCD_SNG_BUF, 0x58);
+//	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x81 , PCD_SNG_BUF, 0xC0);
+//	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x01 , PCD_SNG_BUF, 0x110);
+//	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x82 , PCD_SNG_BUF, 0x100);
+
+// HID
+	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x00, PCD_SNG_BUF, 0x18);
+	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x80, PCD_SNG_BUF, 0x58);
+	HAL_PCDEx_PMAConfig(self.pcd_handle, 0x81, PCD_SNG_BUF, 0x100);
 
 	return USBD_OK;
 }

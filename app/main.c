@@ -11,6 +11,7 @@
 #include "drivers/uart.h"
 #include "drivers/usb.h"
 #include "drivers/usb_cdc.h"
+#include "drivers/usb_hid.h"
 #include "power.h"
 #include "stm32l4xx_hal.h"
 
@@ -106,6 +107,9 @@ void main_task(void *p_arg)
 		led_tx_set(i % 2);
 
 		printf("Hello world %d! (rx=0x%02X)\r\n", i, uart_rx_buf);
+
+		if (i % 10)
+			usb_hid_send(false, false, false, 3, 3);
 
 		status = HAL_UART_Receive(uart_get_handle(), &uart_rx_buf, sizeof(uint8_t), 100);
 		if (status == HAL_OK)

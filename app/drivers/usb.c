@@ -1,12 +1,14 @@
 #include "config/usbd_desc.h"
 #include "drivers/usb.h"
 #include "drivers/usb_cdc.h"
+#include "drivers/usb_hid.h"
 #include "drivers/usb_ll.h"
 
 #include <stdbool.h>
 
 #include <usbd_core.h>
 #include <usbd_cdc.h>
+#include <usbd_hid.h>
 
 static struct
 {
@@ -83,7 +85,7 @@ static uint8_t desc_bos[USB_SIZ_BOS_DESC] =
 };
 #endif
 
-/** USB lang indentifier descriptor. */
+/* USB lang indentifier descriptor. */
 __attribute__ ((aligned(4)))
 static uint8_t desc_langid[USB_LEN_LANGID_STR_DESC] =
 {
@@ -180,7 +182,8 @@ err_t usb_init(void)
 	if (status != USBD_OK)
 		return EUSB_USBD_INIT;
 
-	r = usb_cdc_init(&self.usbd_handle);
+	//r = usb_cdc_init(&self.usbd_handle);
+	r = usb_hid_init(&self.usbd_handle);
 	ERR_CHECK(r);
 
 	status = USBD_Start(&self.usbd_handle);
