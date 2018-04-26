@@ -3,9 +3,9 @@
 #include "stm32l4xx_hal.h"
 #include "errors.h"
 
-#define EADC_HAL_INIT			(ADC_BASE + 0)
-#define EADC_HAL_CONFIG_CHANNEL	(ADC_BASE + 1)
-#define EADC_NO_INIT			(ADC_BASE + 2)
+#define EADC_HAL_INIT			(EADC_BASE + 0)
+#define EADC_HAL_CONFIG_CHANNEL	(EADC_BASE + 1)
+#define EADC_NO_INIT			(EADC_BASE + 2)
 
 #define NUM_OF_ADC_CHANNELS		3
 

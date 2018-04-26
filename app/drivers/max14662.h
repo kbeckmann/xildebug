@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include "errors.h"
 
-#define EMAX14662_INVALID_RESPONSE	(MAX14662_BASE + 0)
+#define EMAX14662_INVALID_RESPONSE	(EMAX14662_BASE + 0)
 
 enum MAX14662_address {
 	MAX14662_AD_0_0 = 0,
