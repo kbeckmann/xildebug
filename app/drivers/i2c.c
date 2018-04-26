@@ -3,36 +3,10 @@
 #include "drivers/gpio.h"
 #include "drivers/i2c.h"
 
-static I2C_HandleTypeDef i2c_handle;
-static bool m_initialized;
-
-err_t i2c_init(void)
-{
-	HAL_StatusTypeDef status;
-
-	i2c_handle.Instance = I2C1;
-	i2c_handle.Init.Timing = 0x10909EEE;
-	i2c_handle.Init.OwnAddress1 = 0;
-	i2c_handle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
-	i2c_handle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-	i2c_handle.Init.OwnAddress2 = 0;
-	i2c_handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-	i2c_handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-	i2c_handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
-
-	status = HAL_I2C_Init(&i2c_handle);
-	HAL_ERR_CHECK(status, EI2C_HAL_INIT);
-
-	status = HAL_I2CEx_ConfigAnalogFilter(&i2c_handle, I2C_ANALOGFILTER_ENABLE);
-	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_ANALOG_FILTER);
-
-	status = HAL_I2CEx_ConfigDigitalFilter(&i2c_handle, 0);
-	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_DIGITAL_FILTER);
-
-	m_initialized = true;
-
-	return ERR_OK;
-}
+static struct {
+	bool initialized;
+	I2C_HandleTypeDef i2c_handle;
+} self;
 
 void HAL_I2C_MspInit(I2C_HandleTypeDef *p_handle)
 {
@@ -63,10 +37,10 @@ err_t i2c_master_tx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32
 {
 	HAL_StatusTypeDef status;
 
-	if (!m_initialized)
+	if (!self.initialized)
 		return EI2C_NO_INIT;
 
-	status = HAL_I2C_Master_Transmit(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	status = HAL_I2C_Master_Transmit(&self.i2c_handle, dev_address, p_data, size, timeout_ms);
 	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_TRANSMIT);
 
 	return ERR_OK;
@@ -76,11 +50,42 @@ err_t i2c_master_rx(uint16_t dev_address, uint8_t *p_data, uint16_t size, uint32
 {
 	HAL_StatusTypeDef status;
 
-	if (!m_initialized)
+	if (!self.initialized)
 		return EI2C_NO_INIT;
 
-	status = HAL_I2C_Master_Receive(&i2c_handle, dev_address, p_data, size, timeout_ms);
+	status = HAL_I2C_Master_Receive(&self.i2c_handle, dev_address, p_data, size, timeout_ms);
 	HAL_ERR_CHECK(status, EI2C_HAL_MASTER_RECEIVE);
+
+	return ERR_OK;
+}
+
+err_t i2c_init(void)
+{
+	HAL_StatusTypeDef status;
+
+	if (self.initialized)
+		return ERR_OK;
+
+	self.i2c_handle.Instance = I2C1;
+	self.i2c_handle.Init.Timing = 0x10909EEE;
+	self.i2c_handle.Init.OwnAddress1 = 0;
+	self.i2c_handle.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+	self.i2c_handle.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	self.i2c_handle.Init.OwnAddress2 = 0;
+	self.i2c_handle.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	self.i2c_handle.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	self.i2c_handle.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+
+	status = HAL_I2C_Init(&self.i2c_handle);
+	HAL_ERR_CHECK(status, EI2C_HAL_INIT);
+
+	status = HAL_I2CEx_ConfigAnalogFilter(&self.i2c_handle, I2C_ANALOGFILTER_ENABLE);
+	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_ANALOG_FILTER);
+
+	status = HAL_I2CEx_ConfigDigitalFilter(&self.i2c_handle, 0);
+	HAL_ERR_CHECK(status, EI2C_HAL_CONFIG_DIGITAL_FILTER);
+
+	self.initialized = true;
 
 	return ERR_OK;
 }
