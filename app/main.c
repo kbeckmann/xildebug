@@ -83,7 +83,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	HAL_UART_Transmit(uart_get_handle(), (uint8_t*)msg, len, HAL_MAX_DELAY);
+	uart_tx(uart_get_handle(), (uint8_t*)msg, len, 100);
 	return len;
 }
 
@@ -94,9 +94,9 @@ int _read(int fd, char *msg, int len)
 
 void main_task(void *p_arg)
 {
-	HAL_StatusTypeDef status;
-	uint8_t uart_rx_buf;
+	uint8_t uart_rx_buf[8];
 	int i = 0;
+	err_t r;
 
 	/* TODO: Handle this properly later... */
 	max14662_set_value(MAX14662_AD_0_0, 0xff);
@@ -106,14 +106,15 @@ void main_task(void *p_arg)
 		led_rgb_set(i % 8);
 		led_tx_set(i % 2);
 
-		printf("Hello world %d! (rx=0x%02X)\r\n", i, uart_rx_buf);
+		printf("Hello world %d! (rx=%s)\r\n", i, uart_rx_buf);
 
 		if (i % 10)
 			usb_hid_send(false, false, false, 3, 3);
 
-		status = HAL_UART_Receive(uart_get_handle(), &uart_rx_buf, sizeof(uint8_t), 100);
-		if (status == HAL_OK)
-			status = usb_cdc_tx(&uart_rx_buf, sizeof(uint8_t));
+		memset(uart_rx_buf, 0, sizeof(uart_rx_buf));
+		r = uart_rx(uart_get_handle(), uart_rx_buf, sizeof(uart_rx_buf) - 1, 250);
+		if (r == ERR_OK)
+			r = usb_cdc_tx(uart_rx_buf, sizeof(uint8_t) - 1);
 	}
 }
 

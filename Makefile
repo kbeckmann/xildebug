@@ -11,6 +11,7 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
@@ -22,6 +23,7 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
 	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
 	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Src/usbd_hid.c \
