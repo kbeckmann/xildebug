@@ -132,6 +132,9 @@ USBD_ClassTypeDef  USBD_HID =
   USBD_HID_GetCfgDesc, 
   USBD_HID_GetCfgDesc,
   USBD_HID_GetDeviceQualifierDesc,
+#if (USBD_SUPPORT_USER_STRING == 1)
+  NULL,
+#endif
 };
 
 /* USB HID device Configuration Descriptor */
