@@ -1,9 +1,9 @@
 #include "drivers/mcp4018t.h"
 #include "drivers/i2c.h"
 
-#define MCP4018T_ADDRESS	0b0101111
+#define MCP4018T_ADDRESS	0x2F
 #define I2C_TIMEOUT			100
-#define SELF_TEST_VALUE		0b0101010
+#define SELF_TEST_VALUE		0x2A
 #define DEFAULT_VALUE		0x01
 #define MAX_VALUE			0x7f
 
