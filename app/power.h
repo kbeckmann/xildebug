@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+
 #include "errors.h"
 
 #define EPOWER_NO_INIT			(EPOWER_BASE + 0)
