@@ -1,10 +1,12 @@
 #pragma once
 
-#include "stm32l4xx_hal.h"
 #include <stdbool.h>
+
+#include "stm32l4xx_hal.h"
 #include "errors.h"
 
 #define EMAX14662_INVALID_RESPONSE	(EMAX14662_BASE + 0)
+#define EMAX14662_NO_INIT			(EMAX14662_BASE + 1)
 
 enum MAX14662_address {
 	MAX14662_AD_0_0 = 0,
