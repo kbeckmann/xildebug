@@ -10,8 +10,7 @@
 #include <usbd_cdc.h>
 #include <usbd_hid.h>
 
-static struct
-{
+static struct {
 	bool initialized;
 	USBD_HandleTypeDef usbd_handle;
 	PCD_HandleTypeDef pcd_handle;
