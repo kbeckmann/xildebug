@@ -11,8 +11,8 @@ static struct {
 	USBD_HandleTypeDef *usbd_handle;
 } self;
 
-uint8_t rx_buff[APP_RX_DATA_SIZE];
-uint8_t tx_buff[APP_TX_DATA_SIZE];
+static uint8_t rx_buff[APP_RX_DATA_SIZE];
+static uint8_t tx_buff[APP_TX_DATA_SIZE];
 
 static int8_t usb_cdc_if_init(void);
 static int8_t usb_cdc_if_deinit(void);

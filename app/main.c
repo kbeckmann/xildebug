@@ -19,9 +19,9 @@
 #define MAIN_TASK_NAME			"Main"
 #define MAIN_TASK_PRIORITY		1
 
-StackType_t main_task_stack[MAIN_TASK_STACK_SIZE];
-TaskHandle_t main_task_handle;
-StaticTask_t main_task_tcb;
+static StackType_t main_task_stack[MAIN_TASK_STACK_SIZE];
+static TaskHandle_t main_task_handle;
+static StaticTask_t main_task_tcb;
 
 HAL_StatusTypeDef SystemClock_Config(void)
 {
@@ -83,7 +83,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx(uart_get_handle(), (uint8_t*)msg, len, 100);
+    uart_tx(uart_get_handle(), (const uint8_t*)msg, len, 100);
 	return len;
 }
 

@@ -28,7 +28,7 @@ static uint8_t *usb_desc_if_str(USBD_SpeedTypeDef speed, uint16_t *p_len);
 static uint8_t * usb_desc_bos(USBD_SpeedTypeDef speed, uint16_t *p_len);
 #endif
 
-USBD_DescriptorsTypeDef desc_funcs =
+static USBD_DescriptorsTypeDef desc_funcs =
 {
 	usb_desc_device,
 	usb_desc_langid,

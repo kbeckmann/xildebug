@@ -3,7 +3,7 @@
 #include "drivers/gpio.h"
 #include "drivers/adc.h"
 
-ADC_HandleTypeDef adc_handle;
+static ADC_HandleTypeDef adc_handle;
 static bool m_initialized;
 static uint16_t m_adc_values[NUM_OF_ADC_CHANNELS];
 static uint32_t m_adc_current_index;

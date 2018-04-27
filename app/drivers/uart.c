@@ -5,12 +5,12 @@
 #include "drivers/gpio.h"
 #include "drivers/uart.h"
 
-DMA_HandleTypeDef hdma_usart3_tx;
-DMA_HandleTypeDef hdma_usart3_rx;
-UART_HandleTypeDef uart_handle;
+static DMA_HandleTypeDef hdma_usart3_tx;
+static DMA_HandleTypeDef hdma_usart3_rx;
+static UART_HandleTypeDef uart_handle;
 
-SemaphoreHandle_t tx_busy_semaphore;
-StaticSemaphore_t tx_busy_semaphore_buffer;
+static SemaphoreHandle_t tx_busy_semaphore;
+static StaticSemaphore_t tx_busy_semaphore_buffer;
 
 // TODO: Add uart_rx_dma
 
