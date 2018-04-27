@@ -7,6 +7,7 @@ compiler:
 before_script:
   - wget https://allg.one/B0OY -O gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb && sudo dpkg -i gcc-arm-embedded_7-2017q4-1~trusty3_amd64.deb
   - arm-none-eabi-gcc --version
+  - nproc
 
 script:
-  - make
+  - make -j2
