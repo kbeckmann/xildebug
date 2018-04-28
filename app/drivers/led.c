@@ -23,17 +23,17 @@ void led_rgb_set(uint8_t color)
 
 void led_tx_set(bool enabled)
 {
-	gpio_write(DUT_UART_TX_LED_GPIO_Port, DUT_UART_TX_LED_Pin, enabled);
+	gpio_write(DUT_UART_TX_LED_GPIO_Port, DUT_UART_TX_LED_Pin, !enabled);
 }
 
 void led_rx_set(bool enabled)
 {
-	gpio_write(DUT_UART_RX_LED_GPIO_Port, DUT_UART_RX_LED_Pin, enabled);
+	gpio_write(DUT_UART_RX_LED_GPIO_Port, DUT_UART_RX_LED_Pin, !enabled);
 }
 
 void led_swd_set(bool enabled)
 {
-	gpio_write(DUT_SWD_LED_GPIO_Port, DUT_SWD_LED_Pin, enabled);
+	gpio_write(DUT_SWD_LED_GPIO_Port, DUT_SWD_LED_Pin, !enabled);
 }
 
 void led_init(void)
