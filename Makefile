@@ -75,7 +75,7 @@ INCLUDES := $(SDK_INCLUDES) $(APP_INCLUDES)
 DEFS     := USE_HAL_DRIVER STM32L433xx
 LDSCRIPT := scripts/ld/STM32L433CCUx_FLASH.ld
 
-CFLAGS   := \
+CFLAGS   += \
 	-Wall -Wextra -Wpedantic -Wno-unused-parameter -std=c99 -Os -g \
 	-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
 	-ffunction-sections -fdata-sections -fomit-frame-pointer \

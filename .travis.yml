@@ -10,4 +10,4 @@ before_script:
   - nproc
 
 script:
-  - make -j2
+  - CFLAGS=-Werror make -j2
