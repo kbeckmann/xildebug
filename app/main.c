@@ -104,7 +104,6 @@ void main_task(void *p_arg)
 	while (1) {
 		i++;
 		led_rgb_set(i % 8);
-		led_tx_set(i % 2);
 
 		printf("Hello world %d! (rx=%s)\r\n", i, uart_rx_buf);
 

@@ -97,6 +97,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	led_tx_set(false);
 	xSemaphoreGiveFromISR(tx_busy_semaphore, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
@@ -127,6 +128,8 @@ err_t uart_tx(UART_HandleTypeDef *p_handle, const uint8_t *p_buf, uint32_t size,
 
 	if (xSemaphoreTake(tx_busy_semaphore, pdMS_TO_TICKS(timeout_ms)) == pdFALSE)
 		return EUART_TX_SEMPH;
+
+	led_tx_set(true);
 
 	/* Ugly const-to-non-const cast because the HAL is annoying. */
 	status = HAL_UART_Transmit_DMA(p_handle, (uint8_t*) p_buf, size);
@@ -164,7 +167,6 @@ err_t uart_init(void)
 	HAL_ERR_CHECK(status, EUART_HAL_INIT);
 
 	tx_busy_semaphore = xSemaphoreCreateBinaryStatic(&tx_busy_semaphore_buffer);
-
 	xSemaphoreGive(tx_busy_semaphore);
 
 	return ERR_OK;
