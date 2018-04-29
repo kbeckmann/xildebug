@@ -107,6 +107,7 @@ out/obj/%.o: %.c
 out/app.elf: $(OBJS)
 	@echo "LD $@"
 	@$(CC) $(CFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) -Xlinker -Map=$@.map
+	@./scripts/size.sh $@
 
 %.bin: %.elf
 	@$(OBJCOPY) -O binary $< $@

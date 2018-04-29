@@ -38,11 +38,14 @@ _estack = 0x20010000;    /* end of RAM */
 _Min_Heap_Size = 0x200;      /* required amount of heap  */
 _Min_Stack_Size = 0x400; /* required amount of stack */
 
+__RAM_LENGTH__ = 64K;
+__FLASH_LENGTH__ = 256K;
+
 /* Specify the memory areas */
 MEMORY
 {
-RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = 64K
-FLASH (rx)      : ORIGIN = 0x8000000, LENGTH = 256K
+  RAM (xrw)      : ORIGIN = 0x20000000, LENGTH = __RAM_LENGTH__
+  FLASH (rx)     : ORIGIN = 0x8000000,  LENGTH = __FLASH_LENGTH__
 }
 
 /* Define output sections */
@@ -52,6 +55,7 @@ SECTIONS
   .isr_vector :
   {
     . = ALIGN(8);
+    __flash_start__ = .;
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(8);
   } >FLASH
@@ -122,6 +126,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
 	. = ALIGN(8);
+    __flash_end__ = .;
   } >FLASH
 
   /* used by the startup to initialize data */
@@ -131,6 +136,7 @@ SECTIONS
   .data : 
   {
     . = ALIGN(8);
+    __ram_start__ = .;
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
@@ -165,6 +171,7 @@ SECTIONS
     . = . + _Min_Heap_Size;
     . = . + _Min_Stack_Size;
     . = ALIGN(8);
+    __ram_end__ = .;
   } >RAM
 
   
