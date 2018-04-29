@@ -83,7 +83,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx(uart_get_handle(), (const uint8_t*)msg, len, 100);
+	uart_tx(uart_get_handle(), (const uint8_t*)msg, len, 100, true);
 	return len;
 }
 

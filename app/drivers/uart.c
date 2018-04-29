@@ -1,6 +1,7 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include <queue.h>
+#include <task.h>
 
 #include "drivers/gpio.h"
 #include "drivers/led.h"
@@ -12,8 +13,13 @@ static UART_HandleTypeDef uart_handle;
 
 static SemaphoreHandle_t tx_busy_semaphore;
 static StaticSemaphore_t tx_busy_semaphore_buffer;
+static SemaphoreHandle_t tx_done_semaphore;
+static StaticSemaphore_t tx_done_semaphore_buffer;
 
-// TODO: Add uart_rx_dma
+static SemaphoreHandle_t rx_busy_semaphore;
+static StaticSemaphore_t rx_busy_semaphore_buffer;
+static SemaphoreHandle_t rx_done_semaphore;
+static StaticSemaphore_t rx_done_semaphore_buffer;
 
 UART_HandleTypeDef *uart_get_handle(void)
 {
@@ -99,13 +105,17 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 	led_tx_set(false);
-	xSemaphoreGiveFromISR(tx_busy_semaphore, &xHigherPriorityTaskWoken);
+
+	xSemaphoreGiveFromISR(tx_done_semaphore, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-	// TODO
+	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	xSemaphoreGiveFromISR(rx_done_semaphore, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void USART3_IRQHandler(void)
@@ -123,30 +133,71 @@ void DMA1_Channel3_IRQHandler(void)
 	HAL_DMA_IRQHandler(&hdma_usart3_rx);
 }
 
-err_t uart_tx(UART_HandleTypeDef *p_handle, const uint8_t *p_buf, uint32_t size, uint32_t timeout_ms)
+err_t uart_tx(UART_HandleTypeDef *p_handle, const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking)
 {
 	HAL_StatusTypeDef status;
+	err_t r = ERR_OK;
 
-	if (xSemaphoreTake(tx_busy_semaphore, pdMS_TO_TICKS(timeout_ms)) == pdFALSE)
+	if (xSemaphoreTake(tx_busy_semaphore, timeout_ticks) == pdFALSE)
 		return EUART_TX_SEMPH;
+
+	if (xSemaphoreTake(tx_done_semaphore, timeout_ticks) == pdFALSE) {
+		r = EUART_TX_SEMPH;
+		goto out;
+	}
 
 	led_tx_set(true);
 
 	/* Ugly const-to-non-const cast because the HAL is annoying. */
 	status = HAL_UART_Transmit_DMA(p_handle, (uint8_t*) p_buf, size);
-	HAL_ERR_CHECK(status, EUART_TX);
+	if (status != HAL_OK) {
+		r = HAL_ERROR_SET(status, EUART_TX);
+		goto out;
+	}
 
-	return ERR_OK;
+	if (blocking) {
+		if (xSemaphoreTake(tx_done_semaphore, timeout_ticks) == pdFALSE) {
+			r = EUART_TX_TIMEOUT;
+			goto out;
+		}
+		xSemaphoreGive(tx_done_semaphore);
+	}
+
+out:
+	xSemaphoreGive(tx_busy_semaphore);
+	return r;
 }
 
-err_t uart_rx(UART_HandleTypeDef *p_handle, uint8_t *p_buf, uint32_t size, uint32_t timeout_ms)
+err_t uart_rx(UART_HandleTypeDef *p_handle, uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks)
 {
 	HAL_StatusTypeDef status;
+	err_t r = ERR_OK;
 
-	status = HAL_UART_Receive(p_handle, (uint8_t*) p_buf, size, timeout_ms);
-	HAL_ERR_CHECK(status, EUART_RX);
+	if (xSemaphoreTake(rx_busy_semaphore, timeout_ticks) == pdFALSE)
+		return EUART_RX_SEMPH;
 
-	return ERR_OK;
+	if (xSemaphoreTake(rx_done_semaphore, timeout_ticks) == pdFALSE) {
+		goto out;
+	}
+
+	status = HAL_UART_Receive_DMA(p_handle, (uint8_t*) p_buf, size);
+	if (status != HAL_OK) {
+		r = HAL_ERROR_SET(status, EUART_RX);
+		goto out;
+	}
+
+	if (xSemaphoreTake(rx_done_semaphore, timeout_ticks) == pdFALSE) {
+		status = HAL_UART_AbortReceive(p_handle);
+		/* Give semaphore because the IRQ handler will never be called if we abort */
+		xSemaphoreGive(rx_done_semaphore);
+		r = EUART_RX_TIMEOUT;
+		goto out;
+	}
+	xSemaphoreGive(rx_done_semaphore);
+
+out:
+	xSemaphoreGive(rx_busy_semaphore);
+	return r;
 }
 
 err_t uart_init(void)
@@ -167,8 +218,15 @@ err_t uart_init(void)
 	status = HAL_UART_Init(&uart_handle);
 	HAL_ERR_CHECK(status, EUART_HAL_INIT);
 
-	tx_busy_semaphore = xSemaphoreCreateBinaryStatic(&tx_busy_semaphore_buffer);
+	tx_busy_semaphore = xSemaphoreCreateMutexStatic(&tx_busy_semaphore_buffer);
 	xSemaphoreGive(tx_busy_semaphore);
+	tx_done_semaphore = xSemaphoreCreateBinaryStatic(&tx_done_semaphore_buffer);
+	xSemaphoreGive(tx_done_semaphore);
+
+	rx_busy_semaphore = xSemaphoreCreateMutexStatic(&rx_busy_semaphore_buffer);
+	xSemaphoreGive(rx_busy_semaphore);
+	rx_done_semaphore = xSemaphoreCreateBinaryStatic(&rx_done_semaphore_buffer);
+	xSemaphoreGive(rx_done_semaphore);
 
 	return ERR_OK;
 }
