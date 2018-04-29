@@ -1,4 +1,5 @@
 #include "FreeRTOS.h"
+#include "task.h"
 
 #define IDLE_TASK_STACK_SIZE	configMINIMAL_STACK_SIZE
 #define TIMER_TASK_STACK_SIZE	configTIMER_TASK_STACK_DEPTH
@@ -21,6 +22,12 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer, Stack
 	*ppxTimerTaskTCBBuffer = &timer_task_tcb;
 	*ppxTimerTaskStackBuffer = &timer_task_stack[0];
 	*pulTimerTaskStackSize = TIMER_TASK_STACK_SIZE;
+}
+
+void vApplicationStackOverflowHook( TaskHandle_t xTask, char *pcTaskName )
+{
+	while(1)
+		;
 }
 
 __attribute__((weak))
