@@ -202,6 +202,17 @@ out:
 	return r;
 }
 
+err_t uart_config_set(UART_InitTypeDef *p_config)
+{
+	HAL_StatusTypeDef status;
+
+	self.uart_handle.Init = *p_config;
+	status = UART_SetConfig(&self.uart_handle);
+	HAL_ERR_CHECK(status, EUART_HAL_INIT);
+
+	return ERR_OK;
+}
+
 err_t uart_init(void)
 {
 	HAL_StatusTypeDef status;

@@ -14,4 +14,5 @@
 
 err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking);
 err_t uart_rx(uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks);
+err_t uart_config_set(UART_InitTypeDef *p_config);
 err_t uart_init(void);
