@@ -83,7 +83,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 
 int _write(int fd, const char *msg, int len)
 {
-	uart_tx(uart_get_handle(), (const uint8_t*)msg, len, 100, true);
+	uart_tx((const uint8_t*)msg, len, 100, true);
 	return len;
 }
 
@@ -111,7 +111,7 @@ void main_task(void *p_arg)
 			usb_hid_send(false, false, false, 3, 3);
 
 		memset(uart_rx_buf, 0, sizeof(uart_rx_buf));
-		r = uart_rx(uart_get_handle(), uart_rx_buf, sizeof(uart_rx_buf) - 1, 250);
+		r = uart_rx(uart_rx_buf, sizeof(uart_rx_buf) - 1, 250);
 		if (r == ERR_OK)
 			r = usb_cdc_tx(uart_rx_buf, sizeof(uint8_t) - 1);
 	}

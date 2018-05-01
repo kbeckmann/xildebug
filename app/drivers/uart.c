@@ -7,23 +7,25 @@
 #include "drivers/led.h"
 #include "drivers/uart.h"
 
-static DMA_HandleTypeDef hdma_usart3_tx;
-static DMA_HandleTypeDef hdma_usart3_rx;
-static UART_HandleTypeDef uart_handle;
+static struct {
+	DMA_HandleTypeDef hdma_usart3_tx;
+	DMA_HandleTypeDef hdma_usart3_rx;
+	UART_HandleTypeDef uart_handle;
 
-static SemaphoreHandle_t tx_busy_semaphore;
-static StaticSemaphore_t tx_busy_semaphore_buffer;
-static SemaphoreHandle_t tx_done_semaphore;
-static StaticSemaphore_t tx_done_semaphore_buffer;
+	SemaphoreHandle_t tx_busy_semaphore;
+	StaticSemaphore_t tx_busy_semaphore_buffer;
+	SemaphoreHandle_t tx_done_semaphore;
+	StaticSemaphore_t tx_done_semaphore_buffer;
 
-static SemaphoreHandle_t rx_busy_semaphore;
-static StaticSemaphore_t rx_busy_semaphore_buffer;
-static SemaphoreHandle_t rx_done_semaphore;
-static StaticSemaphore_t rx_done_semaphore_buffer;
+	SemaphoreHandle_t rx_busy_semaphore;
+	StaticSemaphore_t rx_busy_semaphore_buffer;
+	SemaphoreHandle_t rx_done_semaphore;
+	StaticSemaphore_t rx_done_semaphore_buffer;
+} self;
 
 UART_HandleTypeDef *uart_get_handle(void)
 {
-	return &uart_handle;
+	return &self.uart_handle;
 }
 
 void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
@@ -42,36 +44,36 @@ void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 		gpio_config.Alternate = GPIO_AF7_USART3;
 		HAL_GPIO_Init(GPIOB, &gpio_config);
 		
-		hdma_usart3_tx.Instance = DMA1_Channel2;
-		hdma_usart3_tx.Init.Request = DMA_REQUEST_2;
-		hdma_usart3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
-		hdma_usart3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
-		hdma_usart3_tx.Init.MemInc = DMA_MINC_ENABLE;
-		hdma_usart3_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-		hdma_usart3_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-		hdma_usart3_tx.Init.Mode = DMA_NORMAL;
-		hdma_usart3_tx.Init.Priority = DMA_PRIORITY_LOW;
-		status = HAL_DMA_Init(&hdma_usart3_tx);
+		self.hdma_usart3_tx.Instance = DMA1_Channel2;
+		self.hdma_usart3_tx.Init.Request = DMA_REQUEST_2;
+		self.hdma_usart3_tx.Init.Direction = DMA_MEMORY_TO_PERIPH;
+		self.hdma_usart3_tx.Init.PeriphInc = DMA_PINC_DISABLE;
+		self.hdma_usart3_tx.Init.MemInc = DMA_MINC_ENABLE;
+		self.hdma_usart3_tx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+		self.hdma_usart3_tx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+		self.hdma_usart3_tx.Init.Mode = DMA_NORMAL;
+		self.hdma_usart3_tx.Init.Priority = DMA_PRIORITY_LOW;
+		status = HAL_DMA_Init(&self.hdma_usart3_tx);
 		if (status != HAL_OK)
 			for (;;);
 
-		__HAL_LINKDMA(p_handle, hdmatx, hdma_usart3_tx);
+		__HAL_LINKDMA(p_handle, hdmatx, self.hdma_usart3_tx);
 
 		/* USART3_RX Init */
-		hdma_usart3_rx.Instance = DMA1_Channel3;
-		hdma_usart3_rx.Init.Request = DMA_REQUEST_2;
-		hdma_usart3_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
-		hdma_usart3_rx.Init.PeriphInc = DMA_PINC_DISABLE;
-		hdma_usart3_rx.Init.MemInc = DMA_MINC_ENABLE;
-		hdma_usart3_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
-		hdma_usart3_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
-		hdma_usart3_rx.Init.Mode = DMA_NORMAL;
-		hdma_usart3_rx.Init.Priority = DMA_PRIORITY_LOW;
-		status = HAL_DMA_Init(&hdma_usart3_rx);
+		self.hdma_usart3_rx.Instance = DMA1_Channel3;
+		self.hdma_usart3_rx.Init.Request = DMA_REQUEST_2;
+		self.hdma_usart3_rx.Init.Direction = DMA_PERIPH_TO_MEMORY;
+		self.hdma_usart3_rx.Init.PeriphInc = DMA_PINC_DISABLE;
+		self.hdma_usart3_rx.Init.MemInc = DMA_MINC_ENABLE;
+		self.hdma_usart3_rx.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+		self.hdma_usart3_rx.Init.MemDataAlignment = DMA_MDATAALIGN_BYTE;
+		self.hdma_usart3_rx.Init.Mode = DMA_NORMAL;
+		self.hdma_usart3_rx.Init.Priority = DMA_PRIORITY_LOW;
+		status = HAL_DMA_Init(&self.hdma_usart3_rx);
 		if (status != HAL_OK)
 			for (;;);
 
-		__HAL_LINKDMA(p_handle, hdmarx, hdma_usart3_rx);
+		__HAL_LINKDMA(p_handle, hdmarx, self.hdma_usart3_rx);
 
 		/* USART3 interrupt Init */
 		HAL_NVIC_SetPriority(USART3_IRQn, 5, 0);
@@ -106,7 +108,7 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 	led_tx_set(false);
 
-	xSemaphoreGiveFromISR(tx_done_semaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(self.tx_done_semaphore, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
@@ -114,34 +116,34 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	xSemaphoreGiveFromISR(rx_done_semaphore, &xHigherPriorityTaskWoken);
+	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void USART3_IRQHandler(void)
 {
-	HAL_UART_IRQHandler(&uart_handle);
+	HAL_UART_IRQHandler(&self.uart_handle);
 }
 
 void DMA1_Channel2_IRQHandler(void)
 {
-	HAL_DMA_IRQHandler(&hdma_usart3_tx);
+	HAL_DMA_IRQHandler(&self.hdma_usart3_tx);
 }
 
 void DMA1_Channel3_IRQHandler(void)
 {
-	HAL_DMA_IRQHandler(&hdma_usart3_rx);
+	HAL_DMA_IRQHandler(&self.hdma_usart3_rx);
 }
 
-err_t uart_tx(UART_HandleTypeDef *p_handle, const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking)
+err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking)
 {
 	HAL_StatusTypeDef status;
 	err_t r = ERR_OK;
 
-	if (xSemaphoreTake(tx_busy_semaphore, timeout_ticks) == pdFALSE)
+	if (xSemaphoreTake(self.tx_busy_semaphore, timeout_ticks) == pdFALSE)
 		return EUART_TX_SEMPH;
 
-	if (xSemaphoreTake(tx_done_semaphore, timeout_ticks) == pdFALSE) {
+	if (xSemaphoreTake(self.tx_done_semaphore, timeout_ticks) == pdFALSE) {
 		r = EUART_TX_SEMPH;
 		goto out;
 	}
@@ -149,54 +151,54 @@ err_t uart_tx(UART_HandleTypeDef *p_handle, const uint8_t *p_buf, uint32_t size,
 	led_tx_set(true);
 
 	/* Ugly const-to-non-const cast because the HAL is annoying. */
-	status = HAL_UART_Transmit_DMA(p_handle, (uint8_t*) p_buf, size);
+	status = HAL_UART_Transmit_DMA(&self.uart_handle, (uint8_t*) p_buf, size);
 	if (status != HAL_OK) {
 		r = HAL_ERROR_SET(status, EUART_TX);
 		goto out;
 	}
 
 	if (blocking) {
-		if (xSemaphoreTake(tx_done_semaphore, timeout_ticks) == pdFALSE) {
+		if (xSemaphoreTake(self.tx_done_semaphore, timeout_ticks) == pdFALSE) {
 			r = EUART_TX_TIMEOUT;
 			goto out;
 		}
-		xSemaphoreGive(tx_done_semaphore);
+		xSemaphoreGive(self.tx_done_semaphore);
 	}
 
 out:
-	xSemaphoreGive(tx_busy_semaphore);
+	xSemaphoreGive(self.tx_busy_semaphore);
 	return r;
 }
 
-err_t uart_rx(UART_HandleTypeDef *p_handle, uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks)
+err_t uart_rx(uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks)
 {
 	HAL_StatusTypeDef status;
 	err_t r = ERR_OK;
 
-	if (xSemaphoreTake(rx_busy_semaphore, timeout_ticks) == pdFALSE)
+	if (xSemaphoreTake(self.rx_busy_semaphore, timeout_ticks) == pdFALSE)
 		return EUART_RX_SEMPH;
 
-	if (xSemaphoreTake(rx_done_semaphore, timeout_ticks) == pdFALSE) {
+	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
 		goto out;
 	}
 
-	status = HAL_UART_Receive_DMA(p_handle, (uint8_t*) p_buf, size);
+	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) p_buf, size);
 	if (status != HAL_OK) {
 		r = HAL_ERROR_SET(status, EUART_RX);
 		goto out;
 	}
 
-	if (xSemaphoreTake(rx_done_semaphore, timeout_ticks) == pdFALSE) {
-		status = HAL_UART_AbortReceive(p_handle);
+	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
+		status = HAL_UART_AbortReceive(&self.uart_handle);
 		/* Give semaphore because the IRQ handler will never be called if we abort */
-		xSemaphoreGive(rx_done_semaphore);
+		xSemaphoreGive(self.rx_done_semaphore);
 		r = EUART_RX_TIMEOUT;
 		goto out;
 	}
-	xSemaphoreGive(rx_done_semaphore);
+	xSemaphoreGive(self.rx_done_semaphore);
 
 out:
-	xSemaphoreGive(rx_busy_semaphore);
+	xSemaphoreGive(self.rx_busy_semaphore);
 	return r;
 }
 
@@ -204,29 +206,29 @@ err_t uart_init(void)
 {
 	HAL_StatusTypeDef status;
 
-	uart_handle.Instance = USART3;
-	uart_handle.Init.BaudRate = 115200;
-	uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
-	uart_handle.Init.StopBits = UART_STOPBITS_1;
-	uart_handle.Init.Parity = UART_PARITY_NONE;
-	uart_handle.Init.Mode = UART_MODE_TX_RX;
-	uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
-	uart_handle.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-	uart_handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+	self.uart_handle.Instance = USART3;
+	self.uart_handle.Init.BaudRate = 115200;
+	self.uart_handle.Init.WordLength = UART_WORDLENGTH_8B;
+	self.uart_handle.Init.StopBits = UART_STOPBITS_1;
+	self.uart_handle.Init.Parity = UART_PARITY_NONE;
+	self.uart_handle.Init.Mode = UART_MODE_TX_RX;
+	self.uart_handle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+	self.uart_handle.Init.OverSampling = UART_OVERSAMPLING_16;
+	self.uart_handle.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+	self.uart_handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
 
-	status = HAL_UART_Init(&uart_handle);
+	status = HAL_UART_Init(&self.uart_handle);
 	HAL_ERR_CHECK(status, EUART_HAL_INIT);
 
-	tx_busy_semaphore = xSemaphoreCreateMutexStatic(&tx_busy_semaphore_buffer);
-	xSemaphoreGive(tx_busy_semaphore);
-	tx_done_semaphore = xSemaphoreCreateBinaryStatic(&tx_done_semaphore_buffer);
-	xSemaphoreGive(tx_done_semaphore);
+	self.tx_busy_semaphore = xSemaphoreCreateMutexStatic(&self.tx_busy_semaphore_buffer);
+	xSemaphoreGive(self.tx_busy_semaphore);
+	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
+	xSemaphoreGive(self.tx_done_semaphore);
 
-	rx_busy_semaphore = xSemaphoreCreateMutexStatic(&rx_busy_semaphore_buffer);
-	xSemaphoreGive(rx_busy_semaphore);
-	rx_done_semaphore = xSemaphoreCreateBinaryStatic(&rx_done_semaphore_buffer);
-	xSemaphoreGive(rx_done_semaphore);
+	self.rx_busy_semaphore = xSemaphoreCreateMutexStatic(&self.rx_busy_semaphore_buffer);
+	xSemaphoreGive(self.rx_busy_semaphore);
+	self.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.rx_done_semaphore_buffer);
+	xSemaphoreGive(self.rx_done_semaphore);
 
 	return ERR_OK;
 }
