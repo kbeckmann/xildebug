@@ -84,7 +84,7 @@ CFLAGS   += \
 
 LDFLAGS  := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -T$(LDSCRIPT)
 
-LIBS     := -Wl,--gc-sections --specs=nano.specs -lc -lnosys
+LIBS     := -Wl,--gc-sections --specs=nano.specs -lc -lnosys -Wl,--undefined=uxTopUsedPriority
 
 OBJS     := $(patsubst %.c,out/obj/%.o, $(filter %.c, $(SRCS))) $(patsubst %.s,out/obj/%.o, $(filter %.s, $(SRCS)))
 DEPS     := $(patsubst %.o,%.d,$(OBJS))
@@ -129,6 +129,7 @@ daplink:
 	@openocd \
 	-f interface/cmsis-dap.cfg \
 	-f target/stm32l4x.cfg \
+	-c "stm32l4x.cpu configure -rtos FreeRTOS" \
 	-c "init ; reset halt"
 .PHONY: daplink
 
