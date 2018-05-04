@@ -61,6 +61,7 @@ APP_SRCS := \
 	app/drivers/usb_hid.c \
 	app/drivers/usb_ll.c \
 	app/freertos.c \
+	app/freertos-openocd.c \
 	app/main.c \
 	app/power.c \
 	app/stm32l4_hal.c
