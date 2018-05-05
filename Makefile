@@ -85,7 +85,7 @@ CFLAGS   += \
 
 LDFLAGS  := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -T$(LDSCRIPT)
 
-LIBS     := -Wl,--gc-sections --specs=nano.specs -lc -lnosys -Wl,--undefined=uxTopUsedPriority
+LIBS     := -Wl,--gc-sections,--undefined=uxTopUsedPriority --specs=nano.specs -lc -lnosys
 
 OBJS     := $(patsubst %.c,out/obj/%.o, $(filter %.c, $(SRCS))) $(patsubst %.s,out/obj/%.o, $(filter %.s, $(SRCS)))
 DEPS     := $(patsubst %.o,%.d,$(OBJS))
