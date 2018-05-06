@@ -16,12 +16,13 @@ static struct {
 	uint8_t rx_buff[USB_FS_MAX_PACKET_SIZE];
 	uint8_t ctrl_buff[USB_FS_MAX_PACKET_SIZE];
 	uint8_t rx_len;
-	volatile bool tx_busy;
 	uint8_t ctrl_op_code;
 	uint8_t ctrl_len;
 	uint8_t alt_interface;
 	SemaphoreHandle_t rx_done_semaphore;
 	StaticSemaphore_t rx_done_semaphore_buffer;
+	SemaphoreHandle_t tx_done_semaphore;
+	StaticSemaphore_t tx_done_semaphore_buffer;
 } self;
 
 static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
@@ -102,8 +103,6 @@ static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 	HAL_PCD_EP_Open(self.p_pcd, CDC_OUT_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
 	HAL_PCD_EP_Open(self.p_pcd, CDC_CMD_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_INTR);
 
-	self.tx_busy = false;
-
 	HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buff, USB_FS_MAX_PACKET_SIZE);
 
 	return HAL_OK;
@@ -156,10 +155,13 @@ static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 
 static uint8_t cdc_data_in(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 {
+	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
 	if (epnum != CDC_IN_EP)
 		return HAL_OK;
 
-	self.tx_busy = false;
+	xSemaphoreGiveFromISR(self.tx_done_semaphore, &xHigherPriorityTaskWoken);
+	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return HAL_OK;
 }
@@ -221,10 +223,7 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 	if (self.p_usbd->dev_state != USBD_STATE_CONFIGURED)
 		return EUSB_CDC_NOT_READY;
 
-	if (self.tx_busy)
-		return EUSB_CDC_BUSY;
-
-	self.tx_busy = true;
+	xSemaphoreTake(self.tx_done_semaphore, portMAX_DELAY);
 
 	status = HAL_PCD_EP_Transmit(self.p_pcd, CDC_IN_EP, p_buf, len);
 	if (status != HAL_OK)
@@ -252,6 +251,8 @@ err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 		return EUSB_CDC_REG_CLASS;
 
 	self.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.rx_done_semaphore_buffer);
+	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
+	xSemaphoreGive(self.tx_done_semaphore);
 
 	self.initialized = true;
 
