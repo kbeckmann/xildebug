@@ -6,11 +6,17 @@
 #include "drivers/gpio.h"
 #include "drivers/led.h"
 #include "drivers/uart.h"
+#include "drivers/usb/cdc.h"
+#include "stm32l4xx_hal.h"
+#include "stm32l4xx_ll_dma.h"
 
 static struct {
 	DMA_HandleTypeDef hdma_usart3_tx;
 	DMA_HandleTypeDef hdma_usart3_rx;
 	UART_HandleTypeDef uart_handle;
+
+	struct rx_queue_item rx_item;
+	QueueHandle_t rx_queue_handle;
 
 	SemaphoreHandle_t tx_busy_semaphore;
 	StaticSemaphore_t tx_busy_semaphore_buffer;
@@ -102,7 +108,7 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef *p_handle)
 	}
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *p_uart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
@@ -112,12 +118,27 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+void HAL_UART_RxCpltCallback(UART_HandleTypeDef *p_uart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
+	xQueueSendFromISR(self.rx_queue_handle, &self.rx_item, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, USB_FS_MAX_PACKET_SIZE);
+}
+
+void HAL_UART_AbortReceiveCpltCallback(UART_HandleTypeDef *p_uart)
+{
+	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	self.rx_item.len = USB_FS_MAX_PACKET_SIZE - LL_DMA_GetDataLength(DMA1, LL_DMA_CHANNEL_3);
+
+	if (self.rx_item.len) {
+		xQueueSendFromISR(self.rx_queue_handle, &self.rx_item, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	}
+
+	HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, USB_FS_MAX_PACKET_SIZE);
 }
 
 void USART3_IRQHandler(void)
@@ -170,36 +191,27 @@ out:
 	return r;
 }
 
-err_t uart_rx(uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks)
+err_t uart_start_rx(QueueHandle_t queue)
 {
 	HAL_StatusTypeDef status;
-	err_t r = ERR_OK;
 
-	if (xSemaphoreTake(self.rx_busy_semaphore, timeout_ticks) == pdFALSE)
-		return EUART_RX_SEMPH;
+	self.rx_queue_handle = queue;
+	self.rx_item.len = USB_FS_MAX_PACKET_SIZE;
+	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, self.rx_item.len);
+	HAL_ERR_CHECK(status, EUART_RX);
 
-	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
-		goto out;
-	}
+	return ERR_OK;
+}
 
-	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) p_buf, size);
-	if (status != HAL_OK) {
-		r = HAL_ERROR_SET(status, EUART_RX);
-		goto out;
-	}
+err_t uart_flush_rx(void)
+{
+	HAL_StatusTypeDef status;
 
-	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE) {
-		status = HAL_UART_AbortReceive(&self.uart_handle);
-		/* Give semaphore because the IRQ handler will never be called if we abort */
-		xSemaphoreGive(self.rx_done_semaphore);
-		r = EUART_RX_TIMEOUT;
-		goto out;
-	}
-	xSemaphoreGive(self.rx_done_semaphore);
+	/* HAL_UART_AbortReceiveCpltCallback restarts DMA */
+	status = HAL_UART_AbortReceive_IT(&self.uart_handle);
+	HAL_ERR_CHECK(status, EUART_FLUSH_RX);
 
-out:
-	xSemaphoreGive(self.rx_busy_semaphore);
-	return r;
+	return ERR_OK;
 }
 
 err_t uart_config_set(UART_InitTypeDef *p_config)
