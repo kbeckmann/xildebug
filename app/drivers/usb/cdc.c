@@ -46,7 +46,7 @@ static USBD_ClassTypeDef cdc_class_def = {
 
 static void cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 {
-	switch(cmd) {
+	switch (cmd) {
 	case CDC_SEND_ENCAPSULATED_COMMAND:
 		break;
 
@@ -121,35 +121,35 @@ static uint8_t cdc_deinit(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 {
 	switch (p_req->bmRequest & USB_REQ_TYPE_MASK) {
-		case USB_REQ_TYPE_CLASS :
-			if (p_req->wLength) {
-				if (p_req->bmRequest & 0x80) {
-					cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buff, p_req->wLength);
-					USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
-				} else {
-					self.ctrl_op_code = p_req->bRequest;
-					self.ctrl_len = p_req->wLength;
-
-					USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
-				}
+	case USB_REQ_TYPE_CLASS :
+		if (p_req->wLength) {
+			if (p_req->bmRequest & 0x80) {
+				cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buff, p_req->wLength);
+				USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
 			} else {
-				cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
+				self.ctrl_op_code = p_req->bRequest;
+				self.ctrl_len = p_req->wLength;
+
+				USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
 			}
+		} else {
+			cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
+		}
+		break;
+
+	case USB_REQ_TYPE_STANDARD:
+		switch (p_req->bRequest) {
+		case USB_REQ_GET_INTERFACE:
+			USBD_CtlSendData(p_dev, &self.alt_interface, 1);
 			break;
 
-		case USB_REQ_TYPE_STANDARD:
-			switch (p_req->bRequest) {
-				case USB_REQ_GET_INTERFACE:
-					USBD_CtlSendData(p_dev, &self.alt_interface, 1);
-					break;
-
-				case USB_REQ_SET_INTERFACE:
-					self.alt_interface = p_req->wValue;
-					break;
-			}
-
-		default:
+		case USB_REQ_SET_INTERFACE:
+			self.alt_interface = p_req->wValue;
 			break;
+		}
+
+	default:
+		break;
 	}
 	return HAL_OK;
 }

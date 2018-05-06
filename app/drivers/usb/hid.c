@@ -97,52 +97,52 @@ static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	uint16_t len = 0;
 
 	switch (p_req->bmRequest & USB_REQ_TYPE_MASK) {
-		case USB_REQ_TYPE_CLASS :
-			switch (p_req->bRequest) {
-				case HID_REQ_SET_PROTOCOL:
-					self.protocol = (uint8_t)(p_req->wValue);
-					break;
-
-				case HID_REQ_GET_PROTOCOL:
-					USBD_CtlSendData(p_dev, (uint8_t *)&self.protocol, 1);
-					break;
-
-				case HID_REQ_SET_IDLE:
-					self.idle_state = (uint8_t)(p_req->wValue >> 8);
-					break;
-
-				case HID_REQ_GET_IDLE:
-					USBD_CtlSendData(p_dev, (uint8_t *)&self.idle_state, 1);
-					break;
-
-				default:
-					USBD_CtlError(self.p_pcd);
-					return HAL_ERROR;
-			}
+	case USB_REQ_TYPE_CLASS :
+		switch (p_req->bRequest) {
+		case HID_REQ_SET_PROTOCOL:
+			self.protocol = (uint8_t)(p_req->wValue);
 			break;
 
-		case USB_REQ_TYPE_STANDARD:
-			switch (p_req->bRequest) {
-				case USB_REQ_GET_DESCRIPTOR:
-					if ((p_req->wValue >> 8) == USB_DESC_TYPE_HID_REPORT) {
-						len = MIN(sizeof(desc_hid_report) , p_req->wLength);
-						p_buf = desc_hid_report;
-					} else if ((p_req->wValue >> 8) == USB_DESC_TYPE_HID) {
-						p_buf = desc_hid;
-						len = MIN(USB_LEN_HID_DESC , p_req->wLength);
-					}
+		case HID_REQ_GET_PROTOCOL:
+			USBD_CtlSendData(p_dev, (uint8_t *)&self.protocol, 1);
+			break;
 
-					USBD_CtlSendData(p_dev, p_buf, len);
-					break;
+		case HID_REQ_SET_IDLE:
+			self.idle_state = (uint8_t)(p_req->wValue >> 8);
+			break;
 
-				case USB_REQ_GET_INTERFACE:
-					USBD_CtlSendData(p_dev, (uint8_t *)&self.alt_interface, 1);
-					break;
+		case HID_REQ_GET_IDLE:
+			USBD_CtlSendData(p_dev, (uint8_t *)&self.idle_state, 1);
+			break;
 
-				case USB_REQ_SET_INTERFACE:
-					self.alt_interface = (uint8_t)(p_req->wValue);
-					break;
+		default:
+			USBD_CtlError(self.p_pcd);
+			return HAL_ERROR;
+		}
+		break;
+
+	case USB_REQ_TYPE_STANDARD:
+		switch (p_req->bRequest) {
+		case USB_REQ_GET_DESCRIPTOR:
+			if ((p_req->wValue >> 8) == USB_DESC_TYPE_HID_REPORT) {
+				len = MIN(sizeof(desc_hid_report) , p_req->wLength);
+				p_buf = desc_hid_report;
+			} else if ((p_req->wValue >> 8) == USB_DESC_TYPE_HID) {
+				p_buf = desc_hid;
+				len = MIN(USB_LEN_HID_DESC , p_req->wLength);
 			}
+
+			USBD_CtlSendData(p_dev, p_buf, len);
+			break;
+
+		case USB_REQ_GET_INTERFACE:
+			USBD_CtlSendData(p_dev, (uint8_t *)&self.alt_interface, 1);
+			break;
+
+		case USB_REQ_SET_INTERFACE:
+			self.alt_interface = (uint8_t)(p_req->wValue);
+			break;
+		}
 	}
 
 	return HAL_OK;

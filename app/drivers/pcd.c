@@ -46,21 +46,21 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *p_pcd)
 	self.p_usbd->ep0_data_len = self.p_usbd->request.wLength;
 
 	switch (self.p_usbd->request.bmRequest & 0x1F) {
-		case USB_REQ_RECIPIENT_DEVICE:
-			USBD_StdDevReq(self.p_usbd, p_pcd, &self.p_usbd->request);
-			break;
+	case USB_REQ_RECIPIENT_DEVICE:
+		USBD_StdDevReq(self.p_usbd, p_pcd, &self.p_usbd->request);
+		break;
 
-		case USB_REQ_RECIPIENT_INTERFACE:
-			USBD_StdItfReq(self.p_usbd, p_pcd, &self.p_usbd->request);
-			break;
+	case USB_REQ_RECIPIENT_INTERFACE:
+		USBD_StdItfReq(self.p_usbd, p_pcd, &self.p_usbd->request);
+		break;
 
-		case USB_REQ_RECIPIENT_ENDPOINT:
-			USBD_StdEPReq(self.p_usbd, p_pcd, &self.p_usbd->request);
-			break;
+	case USB_REQ_RECIPIENT_ENDPOINT:
+		USBD_StdEPReq(self.p_usbd, p_pcd, &self.p_usbd->request);
+		break;
 
-		default:
-			HAL_PCD_EP_SetStall(p_pcd, self.p_usbd->request.bmRequest & 0x80);
-			break;
+	default:
+		HAL_PCD_EP_SetStall(p_pcd, self.p_usbd->request.bmRequest & 0x80);
+		break;
 	}
 }
 
@@ -204,27 +204,27 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *p_pcd)
 void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *p_pcd, PCD_LPM_MsgTypeDef msg)
 {
 	switch (msg){
-		case PCD_LPM_L0_ACTIVE:
-			if (p_pcd->Init.low_power_enable){
-				SystemClock_Config();
+	case PCD_LPM_L0_ACTIVE:
+		if (p_pcd->Init.low_power_enable){
+			SystemClock_Config();
 
-				/* Reset SLEEPDEEP bit of Cortex System Control Register. */
-				SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
-			}
+			/* Reset SLEEPDEEP bit of Cortex System Control Register. */
+			SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+		}
 
-			self.p_usbd->dev_state = self.p_usbd->dev_old_state;
-			break;
+		self.p_usbd->dev_state = self.p_usbd->dev_old_state;
+		break;
 
-		case PCD_LPM_L1_ACTIVE:
-			self.p_usbd->dev_old_state = self.p_usbd->dev_state;
-			self.p_usbd->dev_state = USBD_STATE_SUSPENDED;
+	case PCD_LPM_L1_ACTIVE:
+		self.p_usbd->dev_old_state = self.p_usbd->dev_state;
+		self.p_usbd->dev_state = USBD_STATE_SUSPENDED;
 
-			/* Enter in STOP mode. */
-			if (p_pcd->Init.low_power_enable) {
-				/* Set SLEEPDEEP bit and SleepOnExit of Cortex System Control Register. */
-				SCB->SCR |= (uint32_t)((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
-			}
-			break;
+		/* Enter in STOP mode. */
+		if (p_pcd->Init.low_power_enable) {
+			/* Set SLEEPDEEP bit and SleepOnExit of Cortex System Control Register. */
+			SCB->SCR |= (uint32_t)((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+		}
+		break;
 	}
 }
 
