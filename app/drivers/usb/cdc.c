@@ -5,22 +5,25 @@
 
 #include <FreeRTOS.h>
 #include <semphr.h>
+#include <queue.h>
 #include <stdbool.h>
 
-#define CLASS_IDX						1
+#define CLASS_IDX		1
+#define QUEUE_LENGTH	10
+#define QUEUE_ITEM_SIZE	sizeof(struct rx_queue_item)
 
 static struct {
 	bool initialized;
 	USBD_HandleTypeDef *p_usbd;
 	PCD_HandleTypeDef *p_pcd;
-	uint8_t rx_buff[USB_FS_MAX_PACKET_SIZE];
-	uint8_t ctrl_buff[USB_FS_MAX_PACKET_SIZE];
-	uint8_t rx_len;
+	uint8_t ctrl_buf[USB_FS_MAX_PACKET_SIZE];
+	struct rx_queue_item rx_buf;
 	uint8_t ctrl_op_code;
 	uint8_t ctrl_len;
 	uint8_t alt_interface;
-	SemaphoreHandle_t rx_done_semaphore;
-	StaticSemaphore_t rx_done_semaphore_buffer;
+	StaticQueue_t rx_queue;
+	QueueHandle_t rx_queue_handle;
+	uint8_t rx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
 	SemaphoreHandle_t tx_done_semaphore;
 	StaticSemaphore_t tx_done_semaphore_buffer;
 } self;
@@ -103,7 +106,7 @@ static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 	HAL_PCD_EP_Open(self.p_pcd, CDC_OUT_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_BULK);
 	HAL_PCD_EP_Open(self.p_pcd, CDC_CMD_EP, USB_FS_MAX_PACKET_SIZE, USBD_EP_TYPE_INTR);
 
-	HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buff, USB_FS_MAX_PACKET_SIZE);
+	HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
 
 	return HAL_OK;
 }
@@ -125,13 +128,13 @@ static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 				(p_req->wIndex == USB_CDC_CTRL_INTERFACE_NO)) {
 			if (p_req->wLength) {
 				if (p_req->bmRequest.dir) {
-					cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buff, p_req->wLength);
-					USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
+					cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buf, p_req->wLength);
+					USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buf, p_req->wLength);
 				} else {
 					self.ctrl_op_code = p_req->bRequest;
 					self.ctrl_len = p_req->wLength;
 
-					USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
+					USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buf, p_req->wLength);
 				}
 			} else {
 				cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
@@ -178,11 +181,10 @@ static uint8_t cdc_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 	if (epnum != CDC_OUT_EP)
 		return HAL_OK;
 
-	self.rx_len = HAL_PCD_EP_GetRxCount(self.p_pcd, epnum);
-
-	status = HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buff, USB_FS_MAX_PACKET_SIZE);
-
-	xSemaphoreGiveFromISR(self.rx_done_semaphore, &xHigherPriorityTaskWoken);
+	self.rx_buf.len = HAL_PCD_EP_GetRxCount(self.p_pcd, epnum);
+	status = HAL_PCD_EP_Receive(self.p_pcd, CDC_OUT_EP, self.rx_buf.data, USB_FS_MAX_PACKET_SIZE);
+ 
+	xQueueSendFromISR(self.rx_queue_handle, &self.rx_buf, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 
 	return status;
@@ -193,26 +195,23 @@ static uint8_t cdc_ep0_rx_ready(USBD_HandleTypeDef *p_dev)
 	if (self.ctrl_op_code == 0xFF)
 		return HAL_OK;
 
-	cdc_ctrl(self.ctrl_op_code, (uint8_t *)self.ctrl_buff, self.ctrl_len);
+	cdc_ctrl(self.ctrl_op_code, (uint8_t *)self.ctrl_buf, self.ctrl_len);
 
 	self.ctrl_op_code = 0xFF;
 
 	return HAL_OK;
 }
 
-err_t usb_cdc_rx(const uint8_t **pp_buf, uint16_t *p_len, uint32_t timeout_ticks)
+err_t usb_cdc_rx(struct rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks)
 {
 	if (!self.initialized)
 		return EUSB_CDC_NO_INIT;
 
-	if (!pp_buf || !p_len)
+	if (!p_rx_queue_item)
 		return EUSB_CDC_INVALID_ARG;
 
-	if (xSemaphoreTake(self.rx_done_semaphore, timeout_ticks) == pdFALSE)
+	if (xQueueReceive(self.rx_queue_handle, p_rx_queue_item, timeout_ticks) == pdFALSE)
 		return EUSB_CDC_RX_TIMEOUT;
-
-	*pp_buf = self.rx_buff;
-	*p_len = self.rx_len;
 
 	return ERR_OK;
 }
@@ -254,7 +253,11 @@ err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	if (status != HAL_OK)
 		return EUSB_CDC_REG_CLASS;
 
-	self.rx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.rx_done_semaphore_buffer);
+	self.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
+		QUEUE_ITEM_SIZE,
+		self.rx_queue_storage,
+		&self.rx_queue);
+
 	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
 	xSemaphoreGive(self.tx_done_semaphore);
 
