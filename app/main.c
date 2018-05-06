@@ -2,6 +2,7 @@
 #include <string.h>
 #include <task.h>
 
+#include "cdc_uart_bridge.h"
 #include "drivers/adc.h"
 #include "drivers/gpio.h"
 #include "drivers/i2c.h"
@@ -94,9 +95,7 @@ int _read(int fd, char *msg, int len)
 
 void main_task(void *p_arg)
 {
-	uint8_t uart_rx_buf[8];
 	int i = 0;
-	err_t r;
 
 	/* TODO: Handle this properly later... */
 	max14662_set_value(MAX14662_AD_0_0, 0xff);
@@ -105,12 +104,7 @@ void main_task(void *p_arg)
 		i++;
 		led_rgb_set(i % 8);
 
-		printf("Hello world %d! (rx=%s)\r\n", i, uart_rx_buf);
-
-		memset(uart_rx_buf, 0, sizeof(uart_rx_buf));
-		r = uart_rx(uart_rx_buf, sizeof(uart_rx_buf) - 1, 250);
-		if (r == ERR_OK)
-			r = usb_cdc_tx(uart_rx_buf, sizeof(uint8_t) - 1);
+		vTaskDelay(pdMS_TO_TICKS(250));
 	}
 }
 
@@ -148,6 +142,9 @@ int main(void)
 	ERR_CHECK(r);
 
 	r = usb_init();
+	ERR_CHECK(r);
+
+	r = cdc_uart_bridge_init();
 	ERR_CHECK(r);
 
 	main_task_handle = xTaskCreateStatic(
