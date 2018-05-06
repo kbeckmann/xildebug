@@ -10,8 +10,8 @@
 #include "drivers/mcp4018t.h"
 #include "drivers/uart.h"
 #include "drivers/usb.h"
-#include "drivers/usb_cdc.h"
-#include "drivers/usb_hid.h"
+#include "drivers/usb/cdc.h"
+#include "drivers/usb/hid.h"
 #include "power.h"
 #include "stm32l4xx_hal.h"
 
@@ -106,9 +106,6 @@ void main_task(void *p_arg)
 		led_rgb_set(i % 8);
 
 		printf("Hello world %d! (rx=%s)\r\n", i, uart_rx_buf);
-
-		if (i % 10)
-			usb_hid_send(false, false, false, 3, 3);
 
 		memset(uart_rx_buf, 0, sizeof(uart_rx_buf));
 		r = uart_rx(uart_rx_buf, sizeof(uart_rx_buf) - 1, 250);

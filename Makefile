@@ -25,11 +25,6 @@ SDK_SRCS := \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Src/usbd_hid.c \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
@@ -41,9 +36,6 @@ SDK_INCLUDES := \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
 	SDK/Drivers/CMSIS/Include \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Core/Inc \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc \
-	SDK/Middlewares/ST/STM32_USB_Device_Library/Class/HID/Inc \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
@@ -57,9 +49,10 @@ APP_SRCS := \
 	app/drivers/pcd.c \
 	app/drivers/uart.c \
 	app/drivers/usb.c \
-	app/drivers/usb_cdc.c \
-	app/drivers/usb_hid.c \
-	app/drivers/usb_ll.c \
+	app/drivers/usb/core.c \
+	app/drivers/usb/cdc.c \
+	app/drivers/usb/ctlreq.c \
+	app/drivers/usb/hid.c \
 	app/freertos.c \
 	app/freertos-openocd.c \
 	app/main.c \
