@@ -25,9 +25,6 @@ static uint8_t *usb_desc_usr_str(USBD_HandleTypeDef *p_dev, uint8_t idx, uint16_
 #define USBD_MANUFACTURER_STRING		"xil.se"
 #define USBD_PRODUCT_STRING_FS			"XilDebug CMSIS-DAP"
 #define USBD_SERIALNUMBER_STRING_FS		"123456789ABC"
-#define CDC_CTRL_INTERFACE_NO			0
-#define CDC_DATA_INTERFACE_NO			1
-#define HID_INTERFACE_NO				2
 
 #define USBD_USER_STRING_CDC			"CMSIS-DAP CDC"
 #define USBD_USER_STRING_CDC_IDX		4
@@ -123,7 +120,7 @@ static uint8_t desc_configuration[USB_HID_CONFIG_DESC_SIZ] =
 	/* CDC Data Interface Descriptor */
 	USB_LEN_IF_DESC,					/* bLength */
 	USB_DESC_TYPE_INTERFACE,			/* bDescriptorType */
-	CDC_CTRL_INTERFACE_NO,				/* bInterfaceNumber */
+	USB_CDC_CTRL_INTERFACE_NO,			/* bInterfaceNumber */
 	0,									/* bAlternateSetting */
 	1,									/* bNumEndpoints */
 	USB_CLASS_CDC,						/* bInterfaceClass */
@@ -142,7 +139,7 @@ static uint8_t desc_configuration[USB_HID_CONFIG_DESC_SIZ] =
 	USB_DESC_TYPE_CS_INTERFACE,			/* bDescriptorType */
 	USB_SUBTYPE_CDC_CMNGFN,				/* bDescriptorSubtype  */
 	0x03,								/* bmCapabilities  */
-	CDC_DATA_INTERFACE_NO,				/* bDataInterface */
+	USB_CDC_DATA_INTERFACE_NO,			/* bDataInterface */
 
 	/* ACM Functional Descriptor */
 	USB_LEN_CDC_ACM_FND_DESC,			/* bFunctionLength */
@@ -154,8 +151,8 @@ static uint8_t desc_configuration[USB_HID_CONFIG_DESC_SIZ] =
 	USB_LEN_CDC_UNION_DESC,				/* bFunctionLength */
 	USB_DESC_TYPE_CS_INTERFACE,			/* bDescriptorType */
 	USB_SUBTYPE_CDC_UNIONFN,			/* bDescriptorSubtype */
-	CDC_CTRL_INTERFACE_NO,				/* bMasterInterface */
-	CDC_DATA_INTERFACE_NO,				/* bSlaveInterface0 */
+	USB_CDC_CTRL_INTERFACE_NO,			/* bMasterInterface */
+	USB_CDC_DATA_INTERFACE_NO,			/* bSlaveInterface0 */
 
 	/* Endpoint Descriptor */
 	USB_LEN_EP_DESC,					/* bLength */
@@ -171,7 +168,7 @@ static uint8_t desc_configuration[USB_HID_CONFIG_DESC_SIZ] =
 	/* CDC Data Interface Descriptor */
 	USB_LEN_IF_DESC,					/* bLength */
 	USB_DESC_TYPE_INTERFACE,			/* bDescriptorType */
-	CDC_DATA_INTERFACE_NO,				/* bInterfaceNumber */
+	USB_CDC_DATA_INTERFACE_NO,			/* bInterfaceNumber */
 	0,									/* bAlternateSetting */
 	2,									/* bNumEndpoints */
 	USB_CLASS_CDC_DATA,					/* bInterfaceClass */
@@ -202,7 +199,7 @@ static uint8_t desc_configuration[USB_HID_CONFIG_DESC_SIZ] =
 	/* HID Interface Descriptor */
 	USB_LEN_IF_DESC,					/* bLength */
 	USB_DESC_TYPE_INTERFACE,			/* bDescriptorType */
-	HID_INTERFACE_NO,					/* bInterfaceNumber */
+	USB_HID_INTERFACE_NO,				/* bInterfaceNumber */
 	0,									/* bAlternateSetting */
 	2,									/* bNumEndpoints */
 	USB_CLASS_HID,						/* bInterfaceClass */

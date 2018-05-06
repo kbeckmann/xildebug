@@ -96,28 +96,31 @@ static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	uint8_t *p_buf = NULL;
 	uint16_t len = 0;
 
-	switch (p_req->bmRequest & USB_REQ_TYPE_MASK) {
+	switch (p_req->bmRequest.type) {
 	case USB_REQ_TYPE_CLASS :
-		switch (p_req->bRequest) {
-		case HID_REQ_SET_PROTOCOL:
-			self.protocol = (uint8_t)(p_req->wValue);
-			break;
+		if ((p_req->bmRequest.recipient == USB_REQ_RECIPIENT_INTERFACE) &&
+				(p_req->wIndex == USB_HID_INTERFACE_NO)) {
+			switch (p_req->bRequest) {
+			case HID_REQ_SET_PROTOCOL:
+				self.protocol = (uint8_t)(p_req->wValue);
+				break;
 
-		case HID_REQ_GET_PROTOCOL:
-			USBD_CtlSendData(p_dev, (uint8_t *)&self.protocol, 1);
-			break;
+			case HID_REQ_GET_PROTOCOL:
+				USBD_CtlSendData(p_dev, (uint8_t *)&self.protocol, 1);
+				break;
 
-		case HID_REQ_SET_IDLE:
-			self.idle_state = (uint8_t)(p_req->wValue >> 8);
-			break;
+			case HID_REQ_SET_IDLE:
+				self.idle_state = (uint8_t)(p_req->wValue >> 8);
+				break;
 
-		case HID_REQ_GET_IDLE:
-			USBD_CtlSendData(p_dev, (uint8_t *)&self.idle_state, 1);
-			break;
+			case HID_REQ_GET_IDLE:
+				USBD_CtlSendData(p_dev, (uint8_t *)&self.idle_state, 1);
+				break;
 
-		default:
-			USBD_CtlError(self.p_pcd);
-			return HAL_ERROR;
+			default:
+				USBD_CtlError(self.p_pcd);
+				return HAL_ERROR;
+			}
 		}
 		break;
 

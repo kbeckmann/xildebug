@@ -332,7 +332,7 @@ HAL_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_
 	USBD_EndpointTypeDef *p_ep;
 
 	/* Check if it is a class request */
-	if ((p_req->bmRequest & 0x60) == 0x20) {
+	if (p_req->bmRequest.type == USB_REQ_TYPE_CLASS) {
 		for (int i = 0; i < USBD_MAX_NUM_CLASSES; ++i)
 			p_dev->pClasses[i]->Setup(p_dev, p_req);
 

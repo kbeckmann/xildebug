@@ -51,14 +51,12 @@
 #define USBD_IDX_SERIAL_STR								0x03
 
 #define USB_REQ_TYPE_STANDARD							0x00
-#define USB_REQ_TYPE_CLASS								0x20
-#define USB_REQ_TYPE_VENDOR								0x40
-#define USB_REQ_TYPE_MASK								0x60
+#define USB_REQ_TYPE_CLASS								0x01
+#define USB_REQ_TYPE_VENDOR								0x03
 
 #define USB_REQ_RECIPIENT_DEVICE						0x00
 #define USB_REQ_RECIPIENT_INTERFACE						0x01
 #define USB_REQ_RECIPIENT_ENDPOINT						0x02
-#define USB_REQ_RECIPIENT_MASK							0x03
 
 #define USB_REQ_GET_STATUS								0x00
 #define USB_REQ_CLEAR_FEATURE							0x01
@@ -168,14 +166,19 @@
 #define USBD_EP_TYPE_BULK								2
 #define USBD_EP_TYPE_INTR								3
 
-typedef struct usb_setup_req
+
+typedef struct  usb_setup_req
 {
-	uint8_t  bmRequest;
-	uint8_t  bRequest;
+	struct {
+		uint8_t recipient : 5;
+		uint8_t type      : 2;
+		uint8_t dir       : 1;
+	} bmRequest;
+	uint8_t bRequest;
 	uint16_t wValue;
 	uint16_t wIndex;
 	uint16_t wLength;
-}USBD_SetupReqTypedef;
+}  __attribute((packed)) USBD_SetupReqTypedef ;
 
 struct _USBD_HandleTypeDef;
 

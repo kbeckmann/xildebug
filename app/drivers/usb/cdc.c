@@ -119,20 +119,23 @@ static uint8_t cdc_deinit(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 
 static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 {
-	switch (p_req->bmRequest & USB_REQ_TYPE_MASK) {
+	switch (p_req->bmRequest.type) {
 	case USB_REQ_TYPE_CLASS :
-		if (p_req->wLength) {
-			if (p_req->bmRequest & 0x80) {
-				cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buff, p_req->wLength);
-				USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
-			} else {
-				self.ctrl_op_code = p_req->bRequest;
-				self.ctrl_len = p_req->wLength;
+		if ((p_req->bmRequest.recipient == USB_REQ_RECIPIENT_INTERFACE) &&
+				(p_req->wIndex == USB_CDC_CTRL_INTERFACE_NO)) {
+			if (p_req->wLength) {
+				if (p_req->bmRequest.dir) {
+					cdc_ctrl(p_req->bRequest, (uint8_t *)self.ctrl_buff, p_req->wLength);
+					USBD_CtlSendData(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
+				} else {
+					self.ctrl_op_code = p_req->bRequest;
+					self.ctrl_len = p_req->wLength;
 
-				USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
+					USBD_CtlPrepareRx(p_dev, (uint8_t *)self.ctrl_buff, p_req->wLength);
+				}
+			} else {
+				cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
 			}
-		} else {
-			cdc_ctrl(p_req->bRequest, (uint8_t *)p_req, 0);
 		}
 		break;
 
@@ -150,6 +153,7 @@ static uint8_t cdc_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	default:
 		break;
 	}
+
 	return HAL_OK;
 }
 

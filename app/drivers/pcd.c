@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <string.h>
 
 #include "drivers/pcd.h"
 #include "drivers/usb/ctlreq.h"
@@ -36,7 +37,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *p_pcd)
 {
 	uint8_t *p_setup = (uint8_t *)p_pcd->Setup;
 
-	self.p_usbd->request.bmRequest = *(uint8_t *)(p_setup);
+	memcpy(&self.p_usbd->request.bmRequest, p_setup, 1);
 	self.p_usbd->request.bRequest  = *(uint8_t *)(p_setup +  1);
 	self.p_usbd->request.wValue    =     SWAPBYTE(p_setup +  2);
 	self.p_usbd->request.wIndex    =     SWAPBYTE(p_setup +  4);
@@ -45,7 +46,7 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *p_pcd)
 	self.p_usbd->ep0_state = USBD_EP0_SETUP;
 	self.p_usbd->ep0_data_len = self.p_usbd->request.wLength;
 
-	switch (self.p_usbd->request.bmRequest & 0x1F) {
+	switch (self.p_usbd->request.bmRequest.recipient) {
 	case USB_REQ_RECIPIENT_DEVICE:
 		USBD_StdDevReq(self.p_usbd, p_pcd, &self.p_usbd->request);
 		break;
@@ -59,18 +60,16 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *p_pcd)
 		break;
 
 	default:
-		HAL_PCD_EP_SetStall(p_pcd, self.p_usbd->request.bmRequest & 0x80);
+		HAL_PCD_EP_SetStall(p_pcd, *(uint8_t*)(&self.p_usbd->request.bmRequest) & 0x80);
 		break;
 	}
 }
 
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *p_pcd, uint8_t epnum)
 {
-	uint8_t *p_data = p_pcd->OUT_ep[epnum].xfer_buff;
-	USBD_EndpointTypeDef *p_ep;
-
 	if (epnum == 0x00) {
-		p_ep = &self.p_usbd->ep_out[0];
+		USBD_EndpointTypeDef *p_ep = &self.p_usbd->ep_out[0];
+		uint8_t *p_data = p_pcd->OUT_ep[epnum].xfer_buff;
 
 		if (self.p_usbd->ep0_state == USBD_EP0_DATA_OUT) {
 			if (p_ep->rem_length > p_ep->maxpacket) {
