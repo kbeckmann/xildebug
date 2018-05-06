@@ -131,7 +131,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *p_pcd, uint8_t epnum)
 	} else {
 		for (int i = 0; i < USBD_MAX_NUM_CLASSES; ++i) {
 			if ((self.p_usbd->pClasses[i]->DataIn != NULL) && (self.p_usbd->dev_state == USBD_STATE_CONFIGURED))
-				self.p_usbd->pClasses[i]->DataIn(self.p_usbd, epnum);
+				self.p_usbd->pClasses[i]->DataIn(self.p_usbd, epnum | 0x80);
 		}
 	}
 }
