@@ -45,7 +45,7 @@ HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd,
 
 	self.p_pcd = p_pcd;
 	self.p_pcd->Instance = USB;
-	self.p_pcd->Init.dev_endpoints = 8;
+	self.p_pcd->Init.dev_endpoints = USBD_MAX_NUM_ENDPOINTS;
 	self.p_pcd->Init.speed = PCD_SPEED_FULL;
 	self.p_pcd->Init.ep0_mps = DEP0CTL_MPS_64;
 	self.p_pcd->Init.phy_itface = PCD_PHY_EMBEDDED;
@@ -57,8 +57,8 @@ HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd,
 	if (HAL_PCD_Init(p_pcd) != HAL_OK)
 		return HAL_ERROR;
 
-	HAL_PCDEx_PMAConfig(p_pcd, 0x00, PCD_SNG_BUF, 0x18);
-	HAL_PCDEx_PMAConfig(p_pcd, 0x80, PCD_SNG_BUF, 0x58);
+	HAL_PCDEx_PMAConfig(p_pcd, 0x00, PCD_SNG_BUF, USB_PMA_BASE + 0 * 0x40);
+	HAL_PCDEx_PMAConfig(p_pcd, 0x80, PCD_SNG_BUF, USB_PMA_BASE + 1 * 0x40);
 
 	return HAL_OK;
 }

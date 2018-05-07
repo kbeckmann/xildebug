@@ -246,9 +246,10 @@ err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	self.p_usbd = p_usbd;
 	self.p_pcd = p_pcd;
 
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_IN_EP,  PCD_SNG_BUF, 0x118);
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_OUT_EP, PCD_SNG_BUF, 0x158);
-	HAL_PCDEx_PMAConfig(p_pcd, CDC_CMD_EP, PCD_SNG_BUF, 0x198);
+	HAL_PCDEx_PMAConfig(p_pcd, CDC_CMD_EP, PCD_SNG_BUF, USB_PMA_BASE + 2 * USB_FS_MAX_PACKET_SIZE);
+
+	HAL_PCDEx_PMAConfig(p_pcd, CDC_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 4 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(p_pcd, CDC_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 5 * USB_FS_MAX_PACKET_SIZE);
 
 	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &cdc_class_def);
 	if (status != HAL_OK)
