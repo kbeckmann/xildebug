@@ -229,8 +229,7 @@ err_t usb_cdc_tx(uint8_t *p_buf, uint16_t len)
 	xSemaphoreTake(self.tx_done_semaphore, portMAX_DELAY);
 
 	status = HAL_PCD_EP_Transmit(self.p_pcd, CDC_IN_EP, p_buf, len);
-	if (status != HAL_OK)
-		return EUSB_CDC_TRANSMIT;
+	HAL_ERR_CHECK(status, EUSB_CDC_TRANSMIT);
 
 	return ERR_OK;
 }
@@ -250,8 +249,7 @@ err_t usb_cdc_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	HAL_PCDEx_PMAConfig(p_pcd, CDC_CMD_EP, PCD_SNG_BUF, 0x198);
 
 	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &cdc_class_def);
-	if (status != HAL_OK)
-		return EUSB_CDC_REG_CLASS;
+	HAL_ERR_CHECK(status, EUSB_CDC_REG_CLASS);
 
 	self.rx_queue_handle = xQueueCreateStatic(QUEUE_LENGTH,
 		QUEUE_ITEM_SIZE,
