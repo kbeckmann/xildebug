@@ -122,6 +122,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *p_uart)
 {
 	static BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
+	self.rx_item.len = USB_FS_MAX_PACKET_SIZE;
 	xQueueSendFromISR(self.rx_queue_handle, &self.rx_item, &xHigherPriorityTaskWoken);
 	portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, USB_FS_MAX_PACKET_SIZE);
@@ -196,8 +197,7 @@ err_t uart_start_rx(QueueHandle_t queue)
 	HAL_StatusTypeDef status;
 
 	self.rx_queue_handle = queue;
-	self.rx_item.len = USB_FS_MAX_PACKET_SIZE;
-	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, self.rx_item.len);
+	status = HAL_UART_Receive_DMA(&self.uart_handle, (uint8_t*) self.rx_item.data, USB_FS_MAX_PACKET_SIZE);
 	HAL_ERR_CHECK(status, EUART_RX);
 
 	return ERR_OK;
