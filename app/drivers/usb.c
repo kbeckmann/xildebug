@@ -343,8 +343,7 @@ err_t usb_init(void)
 	ERR_CHECK(r);
 
 	status = USBD_Init(&self.usbd_handle, &self.pcd_handle, &desc_funcs);
-	if (status != HAL_OK)
-		return EUSB_USBD_INIT;
+	HAL_ERR_CHECK(status, EUSB_USBD_INIT);
 
 	r = usb_hid_init(&self.usbd_handle, &self.pcd_handle);
 	ERR_CHECK(r);
@@ -353,8 +352,7 @@ err_t usb_init(void)
 	ERR_CHECK(r);
 
 	status = USBD_Start();
-	if (status != HAL_OK)
-		return EUSB_USBD_START;
+	HAL_ERR_CHECK(status, EUSB_USBD_START);
 
 	self.initialized = true;
 

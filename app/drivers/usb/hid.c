@@ -210,8 +210,7 @@ err_t usb_hid_send(uint8_t *p_data, uint16_t len)
 	self.tx_busy = true;
 
 	status = HAL_PCD_EP_Transmit(self.p_pcd, HID_IN_EP, p_data, len);
-	if (status != HAL_OK)
-		return EUSB_HID_TRANSMIT;
+	HAL_ERR_CHECK(status, EUSB_HID_TRANSMIT);
 
 	return ERR_OK;
 }
@@ -230,8 +229,7 @@ err_t usb_hid_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	HAL_PCDEx_PMAConfig(p_pcd, HID_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 6 * USB_FS_MAX_PACKET_SIZE);
 
 	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &hid_class_def);
-	if (status != HAL_OK)
-		return EUSB_HID_REG_CLASS;
+	HAL_ERR_CHECK(status, EUSB_HID_REG_CLASS);
 
 	self.initialized = true;
 
