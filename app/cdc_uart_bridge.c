@@ -21,8 +21,7 @@
 #define QUEUE_LENGTH			10
 #define QUEUE_ITEM_SIZE			sizeof(struct usb_rx_queue_item)
 
-#define TIMER_QUEUE_TIMEOUT_MS	10
-#define LED_TIMEOUT_MS			100
+#define LED_TIMEOUT_MS			25
 #define UART_RX_TIMEOUT_MS		50
 
 /* Fun test string: 
@@ -60,7 +59,7 @@ static void rx_task(void *p_arg)
 		}
 
 		led_tx_set(true);
-		xTimerReset(self.tx_led_timer, pdMS_TO_TICKS(TIMER_QUEUE_TIMEOUT_MS));
+		xTimerReset(self.tx_led_timer, 0);
 
 		r = uart_tx(rx_queue_item.data, rx_queue_item.len, portMAX_DELAY, true);
 		if (r != ERR_OK) {
@@ -85,7 +84,7 @@ static void tx_task(void *p_arg)
 		}
 
 		led_rx_set(true);
-		xTimerReset(self.rx_led_timer, pdMS_TO_TICKS(TIMER_QUEUE_TIMEOUT_MS));
+		xTimerReset(self.rx_led_timer, 0);
 
 		r = usb_cdc_tx(item.data, item.len);
 		if (r != ERR_OK && r != EUSB_CDC_NOT_READY)
