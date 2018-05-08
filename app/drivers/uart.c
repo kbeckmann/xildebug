@@ -4,7 +4,6 @@
 #include <task.h>
 
 #include "drivers/gpio.h"
-#include "drivers/led.h"
 #include "drivers/uart.h"
 #include "drivers/usb/cdc.h"
 #include "stm32l4xx_hal.h"
