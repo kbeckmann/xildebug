@@ -262,7 +262,6 @@ err_t usb_hid_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	self.tx_done_semaphore = xSemaphoreCreateBinaryStatic(&self.tx_done_semaphore_buffer);
 	xSemaphoreGive(self.tx_done_semaphore);
 
-
 	self.initialized = true;
 
 	return ERR_OK;
