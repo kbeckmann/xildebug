@@ -1,8 +1,10 @@
 #include <FreeRTOS.h>
 #include <task.h>
+#include <timers.h>
 #include <queue.h>
 
 #include "cdc_uart_bridge.h"
+#include "drivers/led.h"
 #include "drivers/max14662.h"
 #include "drivers/uart.h"
 #include "drivers/usb/cdc.h"
@@ -18,6 +20,10 @@
 
 #define QUEUE_LENGTH			10
 #define QUEUE_ITEM_SIZE			sizeof(struct usb_rx_queue_item)
+
+#define TIMER_QUEUE_TIMEOUT_MS	10
+#define LED_TIMEOUT_MS			100
+#define UART_RX_TIMEOUT_MS		50
 
 /* Fun test string: 
 </////////////////////////////////////////////////////////////>[##################]
@@ -35,6 +41,10 @@ static struct {
 	StaticQueue_t tx_queue;
 	QueueHandle_t tx_queue_handle;
 	uint8_t tx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
+	TimerHandle_t rx_led_timer;
+	StaticTimer_t rx_led_timer_storage;
+	TimerHandle_t tx_led_timer;
+	StaticTimer_t tx_led_timer_storage;
 } self;
 
 static void rx_task(void *p_arg)
@@ -48,6 +58,10 @@ static void rx_task(void *p_arg)
 			while (1)
 				;
 		}
+
+		led_tx_set(true);
+		xTimerReset(self.tx_led_timer, pdMS_TO_TICKS(TIMER_QUEUE_TIMEOUT_MS));
+
 		r = uart_tx(rx_queue_item.data, rx_queue_item.len, portMAX_DELAY, true);
 		if (r != ERR_OK) {
 			while (1)
@@ -65,15 +79,27 @@ static void tx_task(void *p_arg)
 		/* uart_start_rx starts a continuous DMA transfer of 64 bytes that sends its data to our 
 		 * queue that we receive here. In order to get shorter messages in near realtime we need
 		 * a timeout and flush the received bytes so far. */
-		if (xQueueReceive(self.tx_queue_handle, &item, 250) == pdFALSE) {
+		if (xQueueReceive(self.tx_queue_handle, &item, pdMS_TO_TICKS(UART_RX_TIMEOUT_MS)) == pdFALSE) {
 			uart_flush_rx();
 			continue;
 		}
+
+		led_rx_set(true);
+		xTimerReset(self.rx_led_timer, pdMS_TO_TICKS(TIMER_QUEUE_TIMEOUT_MS));
 
 		r = usb_cdc_tx(item.data, item.len);
 		if (r != ERR_OK && r != EUSB_CDC_NOT_READY)
 			while (1)
 				;
+	}
+}
+
+static void timer_callback(TimerHandle_t timer_handle)
+{
+	if (timer_handle == self.tx_led_timer) {
+		led_tx_set(false);
+	} else if (timer_handle == self.rx_led_timer) {
+		led_rx_set(false);
 	}
 }
 
@@ -110,6 +136,22 @@ err_t cdc_uart_bridge_init(void)
 		QUEUE_ITEM_SIZE,
 		self.tx_queue_storage,
 		&self.tx_queue);
+
+	self.tx_led_timer = xTimerCreateStatic(
+		"tx_led",
+		pdMS_TO_TICKS(LED_TIMEOUT_MS),
+		pdFALSE,
+		( void * ) 0,
+		timer_callback,
+		&self.tx_led_timer_storage);
+
+	self.rx_led_timer = xTimerCreateStatic(
+		"rx_led",
+		pdMS_TO_TICKS(LED_TIMEOUT_MS),
+		pdFALSE,
+		( void * ) 0,
+		timer_callback,
+		&self.rx_led_timer_storage);
 
 	// TODO: enable only rx and tx
 	r = max14662_set_value(MAX14662_AD_0_0, 0xff);
