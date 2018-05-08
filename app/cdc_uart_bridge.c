@@ -17,7 +17,7 @@
 #define TX_TASK_PRIORITY		1
 
 #define QUEUE_LENGTH			10
-#define QUEUE_ITEM_SIZE			sizeof(struct rx_queue_item)
+#define QUEUE_ITEM_SIZE			sizeof(struct usb_rx_queue_item)
 
 /* Fun test string: 
 </////////////////////////////////////////////////////////////>[##################]
@@ -39,7 +39,7 @@ static struct {
 
 static void rx_task(void *p_arg)
 {
-	struct rx_queue_item rx_queue_item;
+	struct usb_rx_queue_item rx_queue_item;
 	err_t r;
 
 	for (;;) {
@@ -59,7 +59,7 @@ static void rx_task(void *p_arg)
 static void tx_task(void *p_arg)
 {
 	err_t r;
-	struct rx_queue_item item;
+	struct usb_rx_queue_item item;
 
 	for (;;) {
 		/* uart_start_rx starts a continuous DMA transfer of 64 bytes that sends its data to our 

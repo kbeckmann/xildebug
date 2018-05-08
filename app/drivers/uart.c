@@ -15,7 +15,7 @@ static struct {
 	DMA_HandleTypeDef hdma_usart3_rx;
 	UART_HandleTypeDef uart_handle;
 
-	struct rx_queue_item rx_item;
+	struct usb_rx_queue_item rx_item;
 	QueueHandle_t rx_queue_handle;
 
 	SemaphoreHandle_t tx_busy_semaphore;

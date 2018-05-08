@@ -10,14 +10,14 @@
 
 #define CLASS_IDX		1
 #define QUEUE_LENGTH	10
-#define QUEUE_ITEM_SIZE	sizeof(struct rx_queue_item)
+#define QUEUE_ITEM_SIZE	sizeof(struct usb_rx_queue_item)
 
 static struct {
 	bool initialized;
 	USBD_HandleTypeDef *p_usbd;
 	PCD_HandleTypeDef *p_pcd;
 	uint8_t ctrl_buf[USB_FS_MAX_PACKET_SIZE];
-	struct rx_queue_item rx_buf;
+	struct usb_rx_queue_item rx_buf;
 	uint8_t ctrl_op_code;
 	uint8_t ctrl_len;
 	uint8_t alt_interface;
@@ -202,7 +202,7 @@ static uint8_t cdc_ep0_rx_ready(USBD_HandleTypeDef *p_dev)
 	return HAL_OK;
 }
 
-err_t usb_cdc_rx(struct rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks)
+err_t usb_cdc_rx(struct usb_rx_queue_item *p_rx_queue_item, uint32_t timeout_ticks)
 {
 	if (!self.initialized)
 		return EUSB_CDC_NO_INIT;
