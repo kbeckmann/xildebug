@@ -14,6 +14,7 @@ static struct {
 	uint8_t rx_buff[USB_FS_MAX_PACKET_SIZE];
 	uint8_t rx_len;
 	bool tx_busy;
+	bool report_available;
 	uint32_t protocol;
 	uint32_t idle_state;
 	uint32_t alt_interface;
@@ -22,6 +23,7 @@ static struct {
 static uint8_t hid_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
 static uint8_t hid_deinit(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
 static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req);
+static uint8_t hid_ep0_rx_ready(USBD_HandleTypeDef *p_dev);
 static uint8_t hid_data_in(USBD_HandleTypeDef *p_dev, uint8_t epnum);
 static uint8_t hid_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum);
 
@@ -30,7 +32,7 @@ static USBD_ClassTypeDef hid_class_def = {
 	hid_deinit,
 	hid_setup,
 	NULL,
-	NULL,
+	hid_ep0_rx_ready,
 	hid_data_in,
 	hid_data_out,
 	NULL,
@@ -80,6 +82,8 @@ static uint8_t hid_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx)
 
 	self.tx_busy = false;
 
+	HAL_PCD_EP_Receive(self.p_pcd, HID_OUT_EP, self.rx_buff, USB_FS_MAX_PACKET_SIZE);
+
 	return HAL_OK;
 }
 
@@ -117,6 +121,11 @@ static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 				USBD_CtlSendData(p_dev, (uint8_t *)&self.idle_state, 1);
 				break;
 
+			case HID_REQ_SET_REPORT:
+				self.report_available = true;
+				USBD_CtlPrepareRx(p_dev, self.rx_buff, p_req->wLength);
+				break;
+
 			default:
 				USBD_CtlError(self.p_pcd);
 				return HAL_ERROR;
@@ -151,6 +160,16 @@ static uint8_t hid_setup(USBD_HandleTypeDef *p_dev, USBD_SetupReqTypedef *p_req)
 	return HAL_OK;
 }
 
+static uint8_t hid_ep0_rx_ready(USBD_HandleTypeDef *p_dev)
+{
+	if (!self.report_available)
+		return HAL_OK;
+
+	self.report_available = false;
+
+	return HAL_OK;
+}
+
 static uint8_t hid_data_in(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 {
 	if (epnum != HID_IN_EP)
@@ -175,7 +194,7 @@ static uint8_t hid_data_out(USBD_HandleTypeDef *p_dev, uint8_t epnum)
 	return status;
 }
 
-err_t usb_hid_send(USBD_HandleTypeDef *p_dev, uint8_t *p_data, uint16_t len)
+err_t usb_hid_send(uint8_t *p_data, uint16_t len)
 {
 	HAL_StatusTypeDef status;
 
@@ -207,8 +226,8 @@ err_t usb_hid_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd)
 	self.p_usbd = p_usbd;
 	self.p_pcd = p_pcd;
 
-	HAL_PCDEx_PMAConfig(p_pcd, HID_IN_EP, PCD_SNG_BUF, 0x98);
-	HAL_PCDEx_PMAConfig(p_pcd, HID_OUT_EP, PCD_SNG_BUF, 0xD8);
+	HAL_PCDEx_PMAConfig(p_pcd, HID_OUT_EP, PCD_SNG_BUF, USB_PMA_BASE + 3 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(p_pcd, HID_IN_EP,  PCD_SNG_BUF, USB_PMA_BASE + 6 * USB_FS_MAX_PACKET_SIZE);
 
 	status = USBD_RegisterClass(self.p_usbd, CLASS_IDX, &hid_class_def);
 	if (status != HAL_OK)

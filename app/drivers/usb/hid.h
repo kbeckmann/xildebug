@@ -16,5 +16,5 @@
 #define USB_HID_CONFIG_DESC_SIZ		99
 #define HID_REPORT_DESC_SIZ			33
 
-err_t usb_hid_send(USBD_HandleTypeDef *p_dev, uint8_t *p_data, uint16_t len);
+err_t usb_hid_send(uint8_t *p_data, uint16_t len);
 err_t usb_hid_init(USBD_HandleTypeDef *p_usbd, PCD_HandleTypeDef *p_pcd);
