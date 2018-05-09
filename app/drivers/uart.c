@@ -209,7 +209,7 @@ err_t uart_flush_rx(void)
 	return ERR_OK;
 }
 
-err_t uart_config_set(struct uart_line_coding_t *p_config)
+err_t uart_config_set(const struct uart_line_coding *p_config)
 {
 	UART_InitTypeDef hal_config;
 	HAL_StatusTypeDef status;
@@ -217,32 +217,46 @@ err_t uart_config_set(struct uart_line_coding_t *p_config)
 	
 	hal_config.BaudRate = p_config->baudrate_bps;
 
-	if (p_config->databits == 7)
+	switch (p_config->databits) {
+	case 7:
 		value = UART_WORDLENGTH_7B;
-	else if (p_config->databits == 8)
+		break;
+	case 8:
 		value = UART_WORDLENGTH_8B;
-	else
+		break;
+	default:
 		return EUART_INVALID_ARG;
+	};
 	hal_config.WordLength = value;
 
-	if (p_config->stopbits == UART_STOPBITS_CONFIG_1)
+	switch (p_config->stopbits) {
+	case UART_STOPBITS_CONFIG_1:
 		value = UART_STOPBITS_1;
-	else if (p_config->stopbits == UART_STOPBITS_CONFIG_1_5)
+		break;
+	case UART_STOPBITS_CONFIG_1_5:
 		value = UART_STOPBITS_1_5;
-	else if (p_config->stopbits == UART_STOPBITS_CONFIG_2)
+		break;
+	case UART_STOPBITS_CONFIG_2:
 		value = UART_STOPBITS_2;
-	else
+		break;
+	default:
 		return EUART_INVALID_ARG;
+	};
 	hal_config.StopBits = value;
 
-	if (p_config->parity == UART_PARITY_CONFIG_NONE)
+	switch (p_config->parity) {
+	case UART_PARITY_CONFIG_NONE:
 		value = UART_PARITY_NONE;
-	else if (p_config->parity == UART_PARITY_CONFIG_ODD)
+		break;
+	case UART_PARITY_CONFIG_ODD:
 		value = UART_PARITY_ODD;
-	else if (p_config->parity == UART_PARITY_CONFIG_EVEN)
+		break;
+	case UART_PARITY_CONFIG_EVEN:
 		value = UART_PARITY_EVEN;
-	else
+		break;
+	default:
 		return EUART_INVALID_ARG;
+	};
 	hal_config.Parity = value;
 
 	hal_config.Mode = UART_MODE_TX_RX;

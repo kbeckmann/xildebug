@@ -27,8 +27,6 @@ static struct {
 	uint8_t rx_queue_storage[QUEUE_LENGTH * QUEUE_ITEM_SIZE];
 	SemaphoreHandle_t tx_done_semaphore;
 	StaticSemaphore_t tx_done_semaphore_buffer;
-
-	struct uart_line_coding_t line_coding;
 } self;
 
 static uint8_t cdc_init(USBD_HandleTypeDef *p_dev, uint8_t cfgidx);
@@ -89,9 +87,9 @@ static void cdc_ctrl(uint8_t cmd, uint8_t *p_buf, uint16_t len)
 		/* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
 		/*******************************************************************************/
 	case CDC_SET_LINE_CODING:
-		if (len != sizeof(struct uart_line_coding_t))
+		if (len != sizeof(struct uart_line_coding))
 			break;
-		r = uart_config_set((struct uart_line_coding_t *)p_buf);
+		r = uart_config_set((struct uart_line_coding *)p_buf);
 		(void) r;
 		/* TODO: Handle r somehow */
 		break;
