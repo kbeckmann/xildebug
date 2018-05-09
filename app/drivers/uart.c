@@ -45,7 +45,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
 		gpio_config.Pin = DUT_UART_TX_Pin|DUT_UART_RX_Pin;
 		gpio_config.Mode = GPIO_MODE_AF_PP;
 		gpio_config.Pull = GPIO_NOPULL;
-		gpio_config.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+		gpio_config.Speed = GPIO_SPEED_FREQ_LOW;
 		gpio_config.Alternate = GPIO_AF7_USART3;
 		HAL_GPIO_Init(GPIOB, &gpio_config);
 		
