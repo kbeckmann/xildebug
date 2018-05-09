@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #include "errors.h"
-#include "stm32l4xx_hal.h"
 
 #define EUART_HAL_INIT					(EUART_BASE + 0)
 #define EUART_TX_SEMPH					(EUART_BASE + 1)
