@@ -31,10 +31,10 @@ enum uart_parity {
 };
 
 struct uart_line_coding {
-	uint32_t				baudrate_bps;
-	enum uart_stopbits		stopbits : 8;
-	enum uart_parity		parity : 8;
-	uint8_t					databits;
+	uint32_t			baudrate_bps;
+	enum uart_stopbits	stopbits : 8;
+	enum uart_parity	parity : 8;
+	uint8_t				databits;
 } __packed;
 
 err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking);
