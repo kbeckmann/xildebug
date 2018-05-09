@@ -209,7 +209,7 @@ err_t uart_flush_rx(void)
 	return ERR_OK;
 }
 
-err_t uart_config_set(const struct uart_line_coding *p_config)
+err_t uart_config_set(const struct uart_line_coding * const p_config)
 {
 	UART_InitTypeDef hal_config;
 	HAL_StatusTypeDef status;

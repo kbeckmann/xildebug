@@ -40,5 +40,5 @@ struct uart_line_coding {
 err_t uart_tx(const uint8_t *p_buf, uint32_t size, uint32_t timeout_ticks, bool blocking);
 err_t uart_start_rx(QueueHandle_t queue);
 err_t uart_flush_rx(void);
-err_t uart_config_set(const struct uart_line_coding *p_config);
+err_t uart_config_set(const struct uart_line_coding * const p_config);
 err_t uart_init(void);
