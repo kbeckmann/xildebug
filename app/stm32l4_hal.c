@@ -93,6 +93,10 @@ void HAL_MspInit(void)
 	 * TODO: Review priorities when USB is in place.
 	 */
 	HAL_NVIC_SetPriority(ADC1_2_IRQn, 5, 0);
+
+	HAL_DBGMCU_EnableDBGSleepMode();
+	HAL_DBGMCU_EnableDBGStopMode();
+	HAL_DBGMCU_EnableDBGStandbyMode();
 }
 
 void SysTick_Handler(void)
