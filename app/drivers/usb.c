@@ -11,6 +11,7 @@ static struct {
 	bool initialized;
 	USBD_HandleTypeDef usbd_handle;
 	PCD_HandleTypeDef pcd_handle;
+	char usb_serialnumber_string[17];
 } self;
 
 static uint8_t *usb_desc_device(USBD_SpeedTypeDef speed, uint16_t *p_len);
@@ -24,7 +25,6 @@ static uint8_t *usb_desc_usr_str(USBD_HandleTypeDef *p_dev, uint8_t idx, uint16_
 #define USBD_PID_FS						0x9450
 #define USBD_MANUFACTURER_STRING		"xil.se"
 #define USBD_PRODUCT_STRING_FS			"XilDebug CMSIS-DAP"
-#define USBD_SERIALNUMBER_STRING_FS		"123456789ABC"
 
 #define USBD_USER_STRING_CDC			"CMSIS-DAP CDC"
 #define USBD_USER_STRING_CDC_IDX		4
@@ -303,8 +303,7 @@ static uint8_t *usb_desc_usr_str(USBD_HandleTypeDef *p_dev, uint8_t idx, uint16_
 		break;
 
 	case USBD_IDX_SERIAL_STR:
-		// HAL_GetUIDw0()
-		USBD_GetString((uint8_t *)USBD_SERIALNUMBER_STRING_FS, desc_str_buf, p_len);
+		USBD_GetString((uint8_t *)self.usb_serialnumber_string, desc_str_buf, p_len);
 		break;
 
 	case USBD_USER_STRING_CDC_IDX:
@@ -338,6 +337,8 @@ err_t usb_init(void)
 
 	if (self.initialized)
 		return ERR_OK;
+
+	sprintf(self.usb_serialnumber_string, "%08lx%08lx", HAL_GetUIDw0() + HAL_GetUIDw2(), HAL_GetUIDw1());
 
 	r = pcd_init(&self.usbd_handle);
 	ERR_CHECK(r);
