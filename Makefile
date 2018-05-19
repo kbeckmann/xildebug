@@ -54,9 +54,11 @@ APP_SRCS := \
 	app/drivers/usb/ctlreq.c \
 	app/drivers/usb/hid.c \
 	app/cdc_uart_bridge.c \
+	app/errorhandler.c \
 	app/freertos.c \
 	app/freertos-openocd.c \
 	app/main.c \
+	app/platform.c \
 	app/power.c \
 	app/stm32l4_hal.c
 
