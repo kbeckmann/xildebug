@@ -1,5 +1,5 @@
 #include "drivers/max14662.h"
-#include "drivers/i2c.h"
+#include "platform/i2c.h"
 
 #define MAX14662_ADDRESS_0_0	0x4C
 #define MAX14662_ADDRESS_0_1	0x4D

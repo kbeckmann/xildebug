@@ -1,10 +1,10 @@
 #include <FreeRTOS.h>
 #include <task.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #include "drivers/led.h"
-#include "stm32l4xx_hal.h"
-#include "platform.h"
+#include "platform/platform.h"
 
 #define TIMEOUT_S 60
 
@@ -20,7 +20,7 @@ void HardFault_Handler(void)
 		platform_delay_us(100000);
 	}
 
-	HAL_NVIC_SystemReset();
+	platform_reset();
 }
 
 void MemManage_Handler(void)

@@ -1,7 +1,5 @@
-#include "stm32l4xx_hal.h"
-
 #include "drivers/led.h"
-#include "drivers/gpio.h"
+#include "platform/gpio.h"
 
 void led_rgb_set(uint8_t color)
 {

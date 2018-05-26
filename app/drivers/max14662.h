@@ -2,7 +2,6 @@
 
 #include <stdbool.h>
 
-#include "stm32l4xx_hal.h"
 #include "errors.h"
 
 #define EMAX14662_INVALID_RESPONSE	(EMAX14662_BASE + 0)

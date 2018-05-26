@@ -33,3 +33,5 @@ typedef uint32_t err_t;
 #define EUSB_CDC_BASE			(ERR_BASE + (0x0A << 16))
 #define EUSB_HID_BASE			(ERR_BASE + (0x0B << 16))
 #define ECDC_UART_BRIDGE_BASE	(ERR_BASE + (0x0C << 16))
+#define EPLATFORM_BASE			(ERR_BASE + (0x0D << 16))
+#define ETARGET_BASE			(ERR_BASE + (0x0E << 16))

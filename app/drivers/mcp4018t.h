@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stm32l4xx_hal.h"
 #include "errors.h"
 
 #define EMCP4018T_INVALID_RESPONSE	(EMCP4018T_BASE + 0)

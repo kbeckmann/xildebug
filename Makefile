@@ -4,45 +4,33 @@ CC      := $(CROSS_COMPILE)gcc
 LD      := $(CROSS_COMPILE)ld
 OBJCOPY := $(CROSS_COMPILE)objcopy
 
-SDK_SRCS := \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
+TARGET ?= xildebug_big
+
+# Include target first since it chooses a platform
+include targets/$(TARGET)/build.mk
+include platforms/$(PLATFORM)/build.mk
+
+TARGET_SRCS += \
+	$(PLATFORM_SRCS) \
+
+TARGET_INCLUDES += \
+	targets \
+	targets/$(TARGET) \
+	platforms \
+	platforms/$(PLATFORM) \
+	$(PLATFORM_INCLUDES) \
+
+MIDDLEWARE_SRCS += \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c
 
-SDK_INCLUDES := \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
-	SDK/Drivers/CMSIS/Include \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \
+MIDDLEWARE_INCLUDES += \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 
 APP_SRCS := \
-	app/drivers/adc.c \
-	app/drivers/gpio.c \
-	app/drivers/i2c.c \
 	app/drivers/led.c \
 	app/drivers/max14662.c \
 	app/drivers/mcp4018t.c \
@@ -58,29 +46,22 @@ APP_SRCS := \
 	app/freertos.c \
 	app/freertos-openocd.c \
 	app/main.c \
-	app/platform.c \
-	app/power.c \
-	app/stm32l4_hal.c
+	app/power.c
 
 APP_INCLUDES := \
 	app/config \
 	app
 
-SRCS     := $(SDK_SRCS) $(APP_SRCS)
-INCLUDES := $(SDK_INCLUDES) $(APP_INCLUDES)
-
-DEFS     := USE_HAL_DRIVER STM32L433xx
-LDSCRIPT := scripts/ld/STM32L433CCUx_FLASH.ld
+SRCS     := $(TARGET_SRCS) $(MIDDLEWARE_SRCS) $(APP_SRCS)
+INCLUDES := $(TARGET_INCLUDES) $(MIDDLEWARE_INCLUDES) $(APP_INCLUDES)
 
 CFLAGS   += \
 	-Wall -Wextra -Wpedantic -Wno-unused-parameter -std=c99 -Os -g \
-	-mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard \
 	-ffunction-sections -fdata-sections -fomit-frame-pointer \
 	$(addprefix -D, $(DEFS)) \
 	$(addprefix -I, $(INCLUDES))
 
-LDFLAGS  := -mcpu=cortex-m4 -mthumb -mfpu=fpv4-sp-d16 -mfloat-abi=hard -T$(LDSCRIPT)
-
+LDFLAGS  +=
 LIBS     := -Wl,--gc-sections,--undefined=uxTopUsedPriority --specs=nano.specs -lc -lnosys
 
 OBJS     := $(patsubst %.c,out/obj/%.o, $(filter %.c, $(SRCS))) $(patsubst %.s,out/obj/%.o, $(filter %.s, $(SRCS)))

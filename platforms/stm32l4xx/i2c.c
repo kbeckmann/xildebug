@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#include "drivers/gpio.h"
-#include "drivers/i2c.h"
+#include "platform/gpio.h"
+#include "platform/i2c.h"
 
 static struct {
 	bool initialized;

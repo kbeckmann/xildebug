@@ -3,9 +3,6 @@
 #include <task.h>
 
 #include "cdc_uart_bridge.h"
-#include "drivers/adc.h"
-#include "drivers/gpio.h"
-#include "drivers/i2c.h"
 #include "drivers/led.h"
 #include "drivers/max14662.h"
 #include "drivers/mcp4018t.h"
@@ -13,8 +10,11 @@
 #include "drivers/usb.h"
 #include "drivers/usb/cdc.h"
 #include "drivers/usb/hid.h"
+#include "platform/adc.h"
+#include "platform/gpio.h"
+#include "platform/i2c.h"
 #include "power.h"
-#include "stm32l4xx_hal.h"
+#include "target.h"
 
 #define MAIN_TASK_STACK_SIZE	512
 #define MAIN_TASK_NAME			"Main"
@@ -23,65 +23,6 @@
 static StackType_t main_task_stack[MAIN_TASK_STACK_SIZE];
 static TaskHandle_t main_task_handle;
 static StaticTask_t main_task_tcb;
-
-HAL_StatusTypeDef SystemClock_Config(void)
-{
-	HAL_StatusTypeDef status;
-
-	RCC_OscInitTypeDef RCC_OscInitStruct = {
-		.OscillatorType = RCC_OSCILLATORTYPE_HSI48 | RCC_OSCILLATORTYPE_HSI,
-		.HSIState = RCC_HSI_ON,
-		.HSI48State = RCC_HSI48_ON,
-		.HSICalibrationValue = 16,
-		.PLL.PLLState = RCC_PLL_ON,
-		.PLL.PLLSource = RCC_PLLSOURCE_HSI,
-		.PLL.PLLM = 1,
-		.PLL.PLLN = 10,
-		.PLL.PLLP = RCC_PLLP_DIV7,
-		.PLL.PLLQ = RCC_PLLQ_DIV2,
-		.PLL.PLLR = RCC_PLLR_DIV2,
-	};
-
-	status = HAL_RCC_OscConfig(&RCC_OscInitStruct);
-	if (status != HAL_OK)
-		return status;
-
-	RCC_ClkInitTypeDef RCC_ClkInitStruct = {
-		.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2,
-		.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK,
-		.AHBCLKDivider = RCC_SYSCLK_DIV1,
-		.APB1CLKDivider = RCC_HCLK_DIV1,
-		.APB2CLKDivider = RCC_HCLK_DIV1,
-	};
-
-	status = HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4);
-	if (status != HAL_OK)
-		return status;
-
-	RCC_PeriphCLKInitTypeDef PeriphClkInit = {
-		.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_I2C1 | RCC_PERIPHCLK_USB | RCC_PERIPHCLK_ADC,
-		.Usart3ClockSelection = RCC_USART3CLKSOURCE_PCLK1,
-		.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1,
-		.AdcClockSelection = RCC_ADCCLKSOURCE_SYSCLK,
-		.UsbClockSelection = RCC_USBCLKSOURCE_HSI48,
-	};
-
-	status = HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
-	if (status != HAL_OK)
-		return status;
-
-	status = HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
-	if (status != HAL_OK)
-		return status;
-
-	HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq() / 1000);
-
-	HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-	HAL_NVIC_SetPriority(SysTick_IRQn, 15, 0);
-
-	return status;
-}
 
 int _write(int fd, const char *msg, int len)
 {
@@ -133,15 +74,10 @@ void main_task(void *p_arg)
 
 int main(void)
 {
-	HAL_StatusTypeDef status;
+	err_t r;
 
-	status = HAL_Init();
-	if (status != HAL_OK)
-		while (1) ;
-
-	status = SystemClock_Config();
-	if (status != HAL_OK)
-		while (1) ;
+	r = target_init();
+	ERR_CHECK(r);
 
 	gpio_init();
 

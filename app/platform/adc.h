@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stm32l4xx_hal.h"
 #include "errors.h"
 
 #define EADC_HAL_INIT			(EADC_BASE + 0)

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "stm32l4xx_hal.h"
 #include "errors.h"
 
 #define EI2C_HAL_INIT					(EI2C_BASE + 0)

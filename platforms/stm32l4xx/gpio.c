@@ -1,4 +1,4 @@
-#include "gpio.h"
+#include "platform/gpio.h"
 
 #include "stm32l4xx_hal.h"
 
@@ -21,7 +21,7 @@ void gpio_init(void)
 	HAL_GPIO_WritePin(GPIOB, LED_RGB_B_Pin, GPIO_PIN_SET);
 
 	/* Switches also have inverted logic. Should be high (off) during boot sequence. */
-	HAL_GPIO_WritePin(DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, GPIO_PIN_SET);
+	HAL_GPIO_WritePin((GPIO_TypeDef*) DUT_VDD_EN_GPIO_Port, DUT_VDD_EN_Pin, GPIO_PIN_SET);
 
 	gpio_config.Pin = GPIO2_Pin | GPIO3_Pin;
 	gpio_config.Mode = GPIO_MODE_OUTPUT_PP;
@@ -66,9 +66,4 @@ void gpio_init(void)
 	gpio_config.Mode = GPIO_MODE_ANALOG;
 	gpio_config.Pull = GPIO_NOPULL;
 	HAL_GPIO_Init(GPIOH, &gpio_config);
-}
-
-void gpio_write(void *p_port, uint32_t pin, bool value)
-{
-	HAL_GPIO_WritePin((GPIO_TypeDef*) p_port, pin, value ? GPIO_PIN_SET : GPIO_PIN_RESET);
 }

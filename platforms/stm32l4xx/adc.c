@@ -1,7 +1,7 @@
 #include <stdbool.h>
 
-#include "drivers/gpio.h"
-#include "drivers/adc.h"
+#include "platform/adc.h"
+#include "platform/gpio.h"
 
 static ADC_HandleTypeDef adc_handle;
 static bool m_initialized;

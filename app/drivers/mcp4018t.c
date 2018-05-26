@@ -1,5 +1,5 @@
 #include "drivers/mcp4018t.h"
-#include "drivers/i2c.h"
+#include "platform/i2c.h"
 
 #include <stdbool.h>
 

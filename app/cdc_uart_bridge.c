@@ -8,7 +8,6 @@
 #include "drivers/max14662.h"
 #include "drivers/uart.h"
 #include "drivers/usb/cdc.h"
-#include "stm32l4xx_hal.h"
 
 #define RX_TASK_STACK_SIZE		512
 #define RX_TASK_NAME			"CDCrx"

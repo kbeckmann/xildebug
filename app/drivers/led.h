@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #define RGB_RED		(1 << 0)
 #define RGB_GREEN 	(1 << 1)

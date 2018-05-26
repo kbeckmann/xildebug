@@ -3,10 +3,10 @@
 #include <queue.h>
 #include <task.h>
 
-#include "drivers/gpio.h"
 #include "drivers/max14662.h"
 #include "drivers/uart.h"
 #include "drivers/usb/cdc.h"
+#include "platform/gpio.h"
 #include "stm32l4xx_hal.h"
 #include "stm32l4xx_ll_dma.h"
 

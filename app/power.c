@@ -2,11 +2,10 @@
 #include <task.h>
 #include <queue.h>
 
-#include "drivers/adc.h"
-#include "drivers/gpio.h"
 #include "drivers/mcp4018t.h"
+#include "platform/adc.h"
+#include "platform/gpio.h"
 #include "power.h"
-#include "stm32l4xx_hal.h"
 
 #define POWER_TASK_STACK_SIZE	512
 #define POWER_TASK_NAME			"Power"
