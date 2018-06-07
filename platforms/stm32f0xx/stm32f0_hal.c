@@ -3,6 +3,9 @@
 #include "platform/platform.h"
 #include "stm32f0xx_hal.h"
 #include "task.h"
+#include "persistent.h"
+
+#define SYSMEM_ADDRESS 0x1FFFC800
 
 static TIM_HandleTypeDef tim_handle;
 extern void xPortSysTickHandler(void);
@@ -143,9 +146,40 @@ void TIM1_BRK_UP_TRG_COM_IRQHandler(void)
 	HAL_TIM_IRQHandler(&tim_handle);
 }
 
+static void jump_to_bootloader(void)
+{
+	const uint32_t jump_address = *(__IO uint32_t*)(SYSMEM_ADDRESS + 4);
+
+	HAL_RCC_DeInit();
+	HAL_DeInit();
+
+	SysTick->CTRL = 0;
+	SysTick->LOAD = 0;
+	SysTick->VAL = 0;
+
+	__HAL_SYSCFG_REMAPMEMORY_SYSTEMFLASH();
+
+	__set_MSP(*(__IO uint32_t*)SYSMEM_ADDRESS);
+
+	((void (*)(void)) jump_address)();
+
+	while(1);
+}
+
+void platform_reboot_to_dfu(void)
+{
+	persistent_data.reboot_to_bootloader = true;
+	platform_reset();
+}
+
 err_t platform_init(void)
 {
 	HAL_StatusTypeDef status;
+
+	if (persistent_data.reboot_to_bootloader) {
+		persistent_data.reboot_to_bootloader = false;
+		jump_to_bootloader();
+	}
 
 	status = HAL_Init();
 	HAL_ERR_CHECK(status, EPLATFORM_INIT);
