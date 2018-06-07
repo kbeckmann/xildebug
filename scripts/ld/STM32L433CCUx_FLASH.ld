@@ -132,11 +132,16 @@ SECTIONS
   /* used by the startup to initialize data */
   _sidata = LOADADDR(.data);
 
+  .persistent(NOLOAD) :
+  {
+    __ram_start__ = .;
+    KEEP(*(.persistent*))
+  } >RAM
+
   /* Initialized data sections goes into RAM, load LMA copy after code */
   .data : 
   {
     . = ALIGN(8);
-    __ram_start__ = .;
     _sdata = .;        /* create a global symbol at data start */
     *(.data)           /* .data sections */
     *(.data*)          /* .data* sections */
@@ -173,8 +178,6 @@ SECTIONS
     . = ALIGN(8);
     __ram_end__ = .;
   } >RAM
-
-  
 
   /* Remove information from the standard libraries */
   /DISCARD/ :

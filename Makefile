@@ -55,6 +55,7 @@ APP_SRCS := \
 	app/errorhandler.c \
 	app/freertos-openocd.c \
 	app/freertos.c \
+	app/persistent.c \
 	app/main.c \
 
 APP_INCLUDES := \
