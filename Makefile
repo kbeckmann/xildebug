@@ -142,6 +142,10 @@ flash: out/$(TARGET)/app.elf
 	@echo -e "flash banks\nreset halt\nprogram $< verify\nreset run\nexit\n" | nc localhost 4444
 .PHONY: flash
 
+dfu: out/$(TARGET)/app.bin
+	# Uploads the binary to 0x08000000 and resets the target
+	@dfu-util -D $< -a 0 -R -v -s 0x08000000:leave
+
 ifneq ("$(MAKECMDGOALS)","clean")
 -include $(DEPS)
 endif
