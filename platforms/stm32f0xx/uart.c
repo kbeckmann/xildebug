@@ -324,7 +324,9 @@ err_t uart_enable(void)
 
 err_t uart_disable(void)
 {
+#if (FEAT_DUT_SWITCH == 1)
 	err_t r;
+#endif
 
 	if (!self.initialized)
 		return EUART_NO_INIT;
@@ -332,11 +334,13 @@ err_t uart_disable(void)
 	if (!self.enabled)
 		return ERR_OK;
 
+#if (FEAT_DUT_SWITCH == 1)
 	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_RX, false);
 	ERR_CHECK(r);
 
 	r = max14662_set_bit(MAX14662_AD_0_0, MAX14662_BIT_UART_TX, false);
 	ERR_CHECK(r);
+#endif
 
 	self.enabled = false;
 
