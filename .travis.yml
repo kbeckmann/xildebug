@@ -5,7 +5,7 @@ compiler:
 
 before_script:
   - echo $PWD
-  - wget https://allg.one/gXwe -O gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2 && tar xjf gcc-arm-none-eabi-7-2017-q4-major-linux.tar.bz2
+  - wget https://allg.one/O68e -O gcc-arm-none-eabi-7-2017-q4-major-linux.tar.xz && tar xf gcc-arm-none-eabi-7-2017-q4-major-linux.tar.xz
   - export PATH=$PATH:$PWD/gcc-arm-none-eabi-7-2017-q4-major/bin
   - arm-none-eabi-gcc --version
   - make --version
