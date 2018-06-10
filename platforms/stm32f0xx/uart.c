@@ -16,6 +16,9 @@
 #include "macros.h"
 
 static struct {
+	bool enabled;
+	bool initialized;
+
 	DMA_HandleTypeDef hdma_usart1_tx;
 	DMA_HandleTypeDef hdma_usart1_rx;
 	UART_HandleTypeDef uart_handle;
@@ -32,9 +35,6 @@ static struct {
 	StaticSemaphore_t rx_busy_semaphore_buffer;
 	SemaphoreHandle_t rx_done_semaphore;
 	StaticSemaphore_t rx_done_semaphore_buffer;
-
-	bool enabled;
-	bool initialized;
 } SELF;
 
 void HAL_UART_MspInit(UART_HandleTypeDef *p_handle)
