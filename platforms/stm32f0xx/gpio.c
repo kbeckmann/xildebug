@@ -1,6 +1,5 @@
-
-#include "stm32f0xx_hal.h"
 #include "platform/gpio.h"
+#include "stm32f0xx_hal.h"
 
 void gpio_init(void)
 {

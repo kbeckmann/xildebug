@@ -25,11 +25,11 @@
   ******************************************************************************
   */
 
+#include <string.h>
+
+#include "stm32_hal.h"
 #include "usb/core.h"
 #include "usb/ctlreq.h"
-#include "stm32l4xx_hal.h"
-
-#include <string.h>
 
 static void USBD_GetDescriptor(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_SetupReqTypedef *p_req)
 {

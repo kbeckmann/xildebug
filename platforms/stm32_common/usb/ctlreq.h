@@ -1,10 +1,10 @@
 /**
   ******************************************************************************
-  * @file    usbd_core.h
+  * @file    usbd_req.h
   * @author  MCD Application Team
   * @version V2.4.2
   * @date    11-December-2015
-  * @brief   Header file for usbd_core.c file
+  * @brief   Header file for the usbd_req.c file
   ******************************************************************************
   * @attention
   *
@@ -27,20 +27,12 @@
 
 #pragma once
 
+#include "stm32_hal.h"
 #include "usb/def.h"
-#include "stm32f0xx_hal.h"
 
-HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_DescriptorsTypeDef *p_desc);
-HAL_StatusTypeDef USBD_DeInit(USBD_HandleTypeDef *p_dev);
-HAL_StatusTypeDef USBD_Start(void);
-HAL_StatusTypeDef USBD_Stop(USBD_HandleTypeDef *p_dev);
-HAL_StatusTypeDef USBD_RegisterClass(USBD_HandleTypeDef *p_dev, uint8_t idx, USBD_ClassTypeDef *p_class);
+HAL_StatusTypeDef USBD_StdDevReq(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_SetupReqTypedef *p_req);
+HAL_StatusTypeDef USBD_StdItfReq(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_SetupReqTypedef *p_req);
+HAL_StatusTypeDef USBD_StdEPReq(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd, USBD_SetupReqTypedef *p_req);
 
-HAL_StatusTypeDef USBD_SetClassConfig(USBD_HandleTypeDef *p_dev, uint8_t idx, uint8_t cfgidx);
-HAL_StatusTypeDef USBD_ClrClassConfig(USBD_HandleTypeDef *p_dev, uint8_t idx, uint8_t cfgidx);
-
-HAL_StatusTypeDef USBD_CtlSendData(USBD_HandleTypeDef *p_dev, uint8_t *buf, uint16_t len);
-HAL_StatusTypeDef USBD_CtlPrepareRx(USBD_HandleTypeDef *p_dev, uint8_t *p_buf, uint16_t len);
-HAL_StatusTypeDef USBD_CtlSendStatus(USBD_HandleTypeDef *p_dev);
-
-uint8_t USBD_LL_IsStallEP(USBD_HandleTypeDef *p_dev, uint8_t ep_addr);
+void USBD_CtlError(PCD_HandleTypeDef *p_pcd);
+void USBD_GetString(uint8_t *p_desc, uint8_t *p_unicode, uint16_t *p_len);

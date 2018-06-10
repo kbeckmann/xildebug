@@ -1,9 +1,9 @@
 #include "FreeRTOS.h"
 #include "hal_errors.h"
+#include "persistent.h"
 #include "platform/platform.h"
 #include "stm32f0xx_hal.h"
 #include "task.h"
-#include "persistent.h"
 
 #define SYSMEM_ADDRESS 0x1FFFC800
 

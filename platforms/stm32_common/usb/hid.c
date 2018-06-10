@@ -4,12 +4,12 @@
 #include <stdbool.h>
 
 #include "hal_errors.h"
+#include "hid_internal.h"
 #include "platform/usb/hid.h"
 #include "platform/usb/usb.h"
+#include "stm32_hal.h"
 #include "usb/core.h"
 #include "usb/ctlreq.h"
-#include "stm32f0xx_hal.h"
-#include "hid_internal.h"
 
 #define MODULE_NAME		usb_hid
 #include "macros.h"

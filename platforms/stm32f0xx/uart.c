@@ -1,6 +1,6 @@
 #include <FreeRTOS.h>
-#include <semphr.h>
 #include <queue.h>
+#include <semphr.h>
 #include <task.h>
 
 #include "drivers/max14662.h"

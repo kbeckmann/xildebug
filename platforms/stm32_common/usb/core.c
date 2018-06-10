@@ -25,7 +25,7 @@
   ******************************************************************************
   */
 
-#include "stm32l4xx_hal.h"
+#include "stm32_hal.h"
 #include "usb/core.h"
 
 #define MODULE_NAME				usb_core
@@ -43,8 +43,10 @@ HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd,
 	p_dev->pDesc = p_desc;
 	p_dev->dev_state = USBD_STATE_DEFAULT;
 
+#if defined(PWR_CR2_USV)
 	/* Enable USB power on Pwrctrl CR2 register. */
 	HAL_PWREx_EnableVddUSB();
+#endif
 
 	SELF.p_pcd = p_pcd;
 	SELF.p_pcd->Instance = USB;

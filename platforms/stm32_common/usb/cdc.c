@@ -3,14 +3,14 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "cdc_internal.h"
 #include "hal_errors.h"
 #include "platform/platform.h"
 #include "platform/uart.h"
 #include "platform/usb/cdc.h"
 #include "platform/usb/usb.h"
+#include "stm32_hal.h"
 #include "usb/core.h"
-#include "stm32l4xx_hal.h"
-#include "cdc_internal.h"
 
 #define MODULE_NAME		usb_cdc
 #include "macros.h"

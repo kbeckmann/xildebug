@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
+#include "usb/core.h"
 
 struct hid_init_data {
 	USBD_HandleTypeDef *p_usbd;

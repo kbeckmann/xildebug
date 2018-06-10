@@ -2,11 +2,11 @@
 #include <string.h>
 
 #include "pcd.h"
-#include "stm32f0xx_hal.h"
+#include "stm32_hal.h"
 #include "usb/core.h"
 #include "usb/ctlreq.h"
 
-#define MODULE_NAME			pcd
+#define MODULE_NAME				pcd
 #include "macros.h"
 
 static struct {
@@ -202,6 +202,39 @@ void HAL_PCD_DisconnectCallback(PCD_HandleTypeDef *p_pcd)
 	for (int i = 0; i < USBD_MAX_NUM_CLASSES; ++i)
 		SELF.p_usbd->pClasses[i]->DeInit(SELF.p_usbd, SELF.p_usbd->dev_config);
 }
+
+#if defined(STM32L432xx) || defined(STM32L433xx) || defined(STM32L442xx) || defined(STM32L443xx) || \
+    defined(STM32L452xx) || defined(STM32L462xx) || \
+    defined(STM32L475xx) || defined(STM32L476xx) || defined(STM32L485xx) || defined(STM32L486xx) || \
+    defined(STM32L496xx) || defined(STM32L4A6xx) || \
+    defined(STM32L4R5xx) || defined(STM32L4R7xx) || defined(STM32L4R9xx) || defined(STM32L4S5xx) || defined(STM32L4S7xx) || defined(STM32L4S9xx)
+void HAL_PCDEx_LPM_Callback(PCD_HandleTypeDef *p_pcd, PCD_LPM_MsgTypeDef msg)
+{
+	switch (msg){
+	case PCD_LPM_L0_ACTIVE:
+		if (p_pcd->Init.low_power_enable){
+			SystemClock_Config();
+
+			/* Reset SLEEPDEEP bit of Cortex System Control Register. */
+			SCB->SCR &= (uint32_t)~((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+		}
+
+		SELF.p_usbd->dev_state = SELF.p_usbd->dev_old_state;
+		break;
+
+	case PCD_LPM_L1_ACTIVE:
+		SELF.p_usbd->dev_old_state = SELF.p_usbd->dev_state;
+		SELF.p_usbd->dev_state = USBD_STATE_SUSPENDED;
+
+		/* Enter in STOP mode. */
+		if (p_pcd->Init.low_power_enable) {
+			/* Set SLEEPDEEP bit and SleepOnExit of Cortex System Control Register. */
+			SCB->SCR |= (uint32_t)((uint32_t)(SCB_SCR_SLEEPDEEP_Msk | SCB_SCR_SLEEPONEXIT_Msk));
+		}
+		break;
+	}
+}
+#endif
 
 err_t pcd_init(USBD_HandleTypeDef *p_usbd)
 {

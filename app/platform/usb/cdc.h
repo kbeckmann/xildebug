@@ -1,7 +1,7 @@
 #pragma once
 
-#include "platform/usb/usb.h"
 #include "errors.h"
+#include "platform/usb/usb.h"
 
 /* Located in platforms/$platform/usb/ */
 #include "usb/cdc_internal.h"

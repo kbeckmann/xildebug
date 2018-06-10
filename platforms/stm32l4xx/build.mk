@@ -1,40 +1,41 @@
 
 PLATFORM_SRCS := \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
-	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
-	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
-	platforms/$(PLATFORM)/stm32l4_hal.c \
 	platforms/$(PLATFORM)/adc.c \
 	platforms/$(PLATFORM)/gpio.c \
 	platforms/$(PLATFORM)/i2c.c \
-	platforms/$(PLATFORM)/pcd.c \
+	platforms/$(PLATFORM)/stm32l4_hal.c \
 	platforms/$(PLATFORM)/uart.c \
-	platforms/$(PLATFORM)/usb.c \
-	platforms/$(PLATFORM)/usb/core.c \
-	platforms/$(PLATFORM)/usb/cdc.c \
-	platforms/$(PLATFORM)/usb/ctlreq.c \
-	platforms/$(PLATFORM)/usb/hid.c \
+	platforms/stm32_common/pcd.c \
+	platforms/stm32_common/usb/cdc.c \
+	platforms/stm32_common/usb/core.c \
+	platforms/stm32_common/usb/ctlreq.c \
+	platforms/stm32_common/usb/hid.c \
+	platforms/stm32_common/usb/usb.c \
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/gcc/startup_stm32l433xx.s \
+	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Source/Templates/system_stm32l4xx.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_adc.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_cortex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_dma.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_gpio.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_i2c.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pcd.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_pwr_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_rcc.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_tim.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart_ex.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal_uart.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_hal.c \
+	SDK/Drivers/STM32L4xx_HAL_Driver/Src/stm32l4xx_ll_usb.c \
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c \
 
 PLATFORM_INCLUDES := \
 	platforms/$(PLATFORM)/config \
+	platforms/stm32_common \
 	SDK/Drivers/CMSIS/Device/ST/STM32L4xx/Include \
 	SDK/Drivers/CMSIS/Include \
 	SDK/Drivers/STM32L4xx_HAL_Driver/Inc \

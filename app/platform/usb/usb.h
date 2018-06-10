@@ -1,7 +1,7 @@
 #pragma once
 
-#include "usb/def.h"
 #include "errors.h"
+#include "usb/def.h"
 
 #define EUSB_NO_INIT			(EUSB_BASE + 0)
 #define EUSB_USBD_INIT			(EUSB_BASE + 1)
