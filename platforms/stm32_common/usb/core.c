@@ -62,8 +62,8 @@ HAL_StatusTypeDef USBD_Init(USBD_HandleTypeDef *p_dev, PCD_HandleTypeDef *p_pcd,
 	if (HAL_PCD_Init(p_pcd) != HAL_OK)
 		return HAL_ERROR;
 
-	HAL_PCDEx_PMAConfig(p_pcd, 0x00, PCD_SNG_BUF, USB_PMA_BASE + 0 * 0x40);
-	HAL_PCDEx_PMAConfig(p_pcd, 0x80, PCD_SNG_BUF, USB_PMA_BASE + 1 * 0x40);
+	HAL_PCDEx_PMAConfig(p_pcd, 0x00, PCD_SNG_BUF, USB_PMA_BASE + 0 * USB_FS_MAX_PACKET_SIZE);
+	HAL_PCDEx_PMAConfig(p_pcd, 0x80, PCD_SNG_BUF, USB_PMA_BASE + 1 * USB_FS_MAX_PACKET_SIZE);
 
 	return HAL_OK;
 }

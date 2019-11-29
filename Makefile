@@ -45,13 +45,17 @@ MIDDLEWARE_SRCS += \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/list.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/queue.c \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/tasks.c \
-	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c
+	SDK/Middlewares/Third_Party/FreeRTOS/Source/timers.c \
+	SDK/Middlewares/Third_Party/cmsis-dap/DAP.c \
+	SDK/Middlewares/Third_Party/cmsis-dap/SW_DP.c \
 
 MIDDLEWARE_INCLUDES += \
 	SDK/Middlewares/Third_Party/FreeRTOS/Source/include \
+	SDK/Middlewares/Third_Party/cmsis-dap \
 
 APP_SRCS := \
 	app/cdc_uart_bridge.c \
+	app/hid_dap_bridge.c \
 	app/errorhandler.c \
 	app/freertos-openocd.c \
 	app/freertos.c \

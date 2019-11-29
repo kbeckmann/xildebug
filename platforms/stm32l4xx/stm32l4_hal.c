@@ -18,7 +18,7 @@ HAL_StatusTypeDef SystemClock_Config(void)
 		.HSICalibrationValue = 16,
 		.PLL.PLLState = RCC_PLL_ON,
 		.PLL.PLLSource = RCC_PLLSOURCE_HSI,
-		.PLL.PLLM = 1,
+		//.PLL.PLLM = 1,
 		.PLL.PLLN = 10,
 		.PLL.PLLP = RCC_PLLP_DIV7,
 		.PLL.PLLQ = RCC_PLLQ_DIV2,
