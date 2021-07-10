@@ -83,7 +83,14 @@ static void power_task(void *p_arg)
 	for (;;) {
 		xQueueReceive(SELF.queue_handle, adc_values, portMAX_DELAY);
 
-		/* TODO: Do stuff with the values */
+#if 0
+		uint32_t vref;
+		printf("CAL val: %ld\r\n", (uint32_t)(*VREFINT_CAL_ADDR));
+		vref = __LL_ADC_CALC_VREFANALOG_VOLTAGE(item.chan3, LL_ADC_RESOLUTION_12B);
+		printf("VREFINT: %lu\r\n", vref);
+		printf("rank1: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, item.chan1, LL_ADC_RESOLUTION_12B))
+		printf("rank2: %lu\r\n", __LL_ADC_CALC_DATA_TO_VOLTAGE(vref, item.chan2, LL_ADC_RESOLUTION_12B));
+#endif
 	}
 }
 

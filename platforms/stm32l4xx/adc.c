@@ -46,6 +46,9 @@ err_t adc_init(void)
 	status = HAL_ADC_Init(&adc_handle);
 	HAL_ERR_CHECK(status, EADC_HAL_INIT);
 
+	status = HAL_ADCEx_Calibration_Start(&adc_handle, ADC_SINGLE_ENDED);
+	HAL_ERR_CHECK(status, EADC_HAL_INIT);
+
 	ADC_ChannelConfTypeDef adc_config = {
 		.Channel = ADC_CHANNEL_5,
 		.Rank = ADC_REGULAR_RANK_1,
